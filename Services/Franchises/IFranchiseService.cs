@@ -7,5 +7,6 @@ namespace FilmAPI.Services.Franchises
         Task UpdateMoviesAsync(ICollection<int> movieIds, int franchiseId);
         Task<ICollection<Movie>> GetFranchiseMoviesAsync(int franchiseId);
         Task<ICollection<Character>> GetFranchiseCharactersAsync(int franchiseId);
+        Task<Franchise> GetFranchiseByIdAsync(int id); // Corrected return type
     }
 }
