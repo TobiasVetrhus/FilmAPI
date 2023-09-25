@@ -2,12 +2,12 @@
 {
     public class EntityNotFoundException : Exception
     {
-        public EntityNotFoundException(int id)
-            : base($"Character does not exist with ID: {id}")
+        public EntityNotFoundException(string entity, int id)
+            : base($"{entity} does not exist with ID: {id}")
         { }
 
-        public EntityNotFoundException(string name)
-            : base($"Character does not exist with name: {name}")
+        public EntityNotFoundException(string entity, string name)
+            : base($"{entity} does not exist with name: {name}")
         { }
     }
 }

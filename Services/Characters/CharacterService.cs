@@ -1,7 +1,6 @@
 ﻿using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
 using Microsoft.EntityFrameworkCore;
-
 namespace FilmAPI.Services.Characters
 {
     public class CharacterService : ICharacterService
