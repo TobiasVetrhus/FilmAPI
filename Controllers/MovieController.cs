@@ -18,7 +18,8 @@ namespace FilmAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            throw new NotImplementedException();
+            var movies = await _movieService.GetAllAsync();
+            return Ok(movies);
         }
 
         [HttpGet("{id}")]
