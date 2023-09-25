@@ -6,17 +6,29 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FilmAPI.Controllers
 {
+    /// <summary>
+    /// Controller for managing movie-related operations.
+    /// </summary>
     [Route("api/v1/movie")]
     [ApiController]
     public class MovieController : ControllerBase
     {
         private readonly IMovieService _movieService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieController"/> class.
+        /// </summary>
+        /// <param name="movieService">The movie service.</param>
         public MovieController(IMovieService movieService)
         {
             _movieService = movieService;
         }
 
+        /// <summary>
+        /// Maps a <see cref="Movie"/> object to a <see cref="MovieDto"/> object.
+        /// </summary>
+        /// <param name="movie">The movie to map.</param>
+        /// <returns>The mapped <see cref="MovieDto"/>.</returns>
         private MovieDto MapMovieToDto(Movie movie)
         {
             return new MovieDto
@@ -25,25 +37,37 @@ namespace FilmAPI.Controllers
                 Title = movie.Title,
                 Genre = movie.Genre,
                 ReleaseYear = movie.ReleaseYear,
-                // Map other properties as needed
+                Director = movie.Director,
+                Picture = movie.Picture,
+                Trailer = movie.Trailer,
             };
         }
 
+
+        /// <summary>
+        /// Gets a list of all movies.
+        /// </summary>
+        /// <returns>A list of movie DTOs.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            //try
-            //{
-            var movies = await _movieService.GetAllAsync();
-            var movieDtos = movies.Select(movie => MapMovieToDto(movie)).ToList();
-            return Ok(movieDtos);
-            //}
-            //catch (Exception ex)
-            //{
-            //    return HandleException(ex);
-            //}
+            try
+            {
+                var movies = await _movieService.GetAllAsync();
+                var movieDtos = movies.Select(movie => MapMovieToDto(movie)).ToList();
+                return Ok(movieDtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
+        /// <summary>
+        /// Gets a movie by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie to retrieve.</param>
+        /// <returns>The movie DTO.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -68,6 +92,11 @@ namespace FilmAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Saves a new movie.
+        /// </summary>
+        /// <param name="movieDto">The movie DTO to save.</param>
+        /// <returns>The created movie DTO.</returns>
         [HttpPost]
         public async Task<IActionResult> Save([FromBody] MovieDto movieDto)
         {
@@ -79,7 +108,9 @@ namespace FilmAPI.Controllers
                     Title = movieDto.Title,
                     Genre = movieDto.Genre,
                     ReleaseYear = movieDto.ReleaseYear,
-                    // Map other properties as needed
+                    Director = movieDto.Director,
+                    Picture = movieDto.Picture,
+                    Trailer = movieDto.Trailer,
                 };
 
                 var addedMovie = await _movieService.AddAsync(movie);
@@ -92,6 +123,12 @@ namespace FilmAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates an existing movie.
+        /// </summary>
+        /// <param name="id">The ID of the movie to update.</param>
+        /// <param name="movieDto">The updated movie DTO.</param>
+        /// <returns>The updated movie DTO.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] MovieDto movieDto)
         {
@@ -107,7 +144,9 @@ namespace FilmAPI.Controllers
                 existingMovie.Title = movieDto.Title;
                 existingMovie.Genre = movieDto.Genre;
                 existingMovie.ReleaseYear = movieDto.ReleaseYear;
-                // Map other properties as needed
+                existingMovie.Director = movieDto.Director;
+                existingMovie.Picture = movieDto.Picture;
+                existingMovie.Trailer = movieDto.Trailer;
 
                 var updatedMovie = await _movieService.UpdateAsync(existingMovie);
 
@@ -123,6 +162,11 @@ namespace FilmAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a movie by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie to delete.</param>
+        /// <returns>No content.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
