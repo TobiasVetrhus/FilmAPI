@@ -1,10 +1,10 @@
 ﻿using FilmAPI.Data.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace FilmAPI.Services.Movies
 {
-
     /// <summary>
-    /// Service for managing movie data.
+    /// Service class for managing movie-related operations.
     /// </summary>
     public class MovieService : IMovieService
     {
@@ -13,14 +13,18 @@ namespace FilmAPI.Services.Movies
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieService"/> class.
         /// </summary>
-        /// <param name="dbContext">The database context used for interaction with the database.</param>
+        /// <param name="dbContext">The database context for movies.</param>
         public MovieService(MoviesDbContext dbContext)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-
-        // Add a new movie
+        /// <summary>
+        /// Adds a new movie to the database.
+        /// </summary>
+        /// <param name="obj">The movie entity to add.</param>
+        /// <returns>The added movie entity.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="obj"/> is null.</exception>
         public async Task<Movie> AddAsync(Movie obj)
         {
             if (obj == null)
@@ -33,8 +37,10 @@ namespace FilmAPI.Services.Movies
             return obj;
         }
 
-
-        //Delete a movie by its ID
+        /// <summary>
+        /// Deletes a movie by its ID from the database.
+        /// </summary>
+        /// <param name="id">The ID of the movie to delete.</param>
         public async Task DeleteAsync(int id)
         {
             var movieToDelete = await _dbContext.Movies.FindAsync(id);
@@ -47,30 +53,30 @@ namespace FilmAPI.Services.Movies
             }
         }
 
-        //Retrieve all movies
+        /// <summary>
+        /// Retrieves a list of all movies from the database.
+        /// </summary>
+        /// <returns>A list of movie entities.</returns>
         public async Task<IEnumerable<Movie>> GetAllAsync()
         {
             return await _dbContext.Movies.ToListAsync();
         }
 
-        //Retrieve a movie by its ID
+        /// <summary>
+        /// Retrieves a movie by its ID from the database.
+        /// </summary>
+        /// <param name="id">The ID of the movie to retrieve.</param>
+        /// <returns>The movie entity.</returns>
         public async Task<Movie> GetByIdAsync(int id)
         {
             return await _dbContext.Movies.FindAsync(id);
         }
 
-
-        //Retrieve the characters associated with a movie by its ID
-        public async Task<ICollection<Character>> GetMovieCharactersAsync(int movieId)
-        {
-            return await _dbContext.Movies
-                .Where(m => m.Id == movieId)
-                .SelectMany(m => m.Characters)
-                .ToListAsync();
-        }
-
-
-        //Update an existing movie
+        /// <summary>
+        /// Updates an existing movie in the database.
+        /// </summary>
+        /// <param name="obj">The updated movie entity.</param>
+        /// <returns>The updated movie entity.</returns>
         public async Task<Movie> UpdateAsync(Movie obj)
         {
             _dbContext.Entry(obj).State = EntityState.Modified;
@@ -78,20 +84,23 @@ namespace FilmAPI.Services.Movies
             return obj;
         }
 
-
-        // Update the characters associated with a movie
+        /// <summary>
+        /// Updates the characters associated with a movie in the database.
+        /// </summary>
+        /// <param name="characterIds">The IDs of characters to associate with the movie.</param>
+        /// <param name="movieId">The ID of the movie to update.</param>
         public async Task UpdateCharactersAsync(ICollection<int> characterIds, int movieId)
         {
             var movie = await _dbContext.Movies
-            .Include(m => m.Characters)
-            .FirstOrDefaultAsync(m => m.Id == movieId);
+                .Include(m => m.Characters)
+                .FirstOrDefaultAsync(m => m.Id == movieId);
 
-            if (movie == null)
+            if (movie != null)
             {
                 // Clear existing character associations
                 movie.Characters.Clear();
 
-                //Add new character associations
+                // Add new character associations
                 foreach (var characterId in characterIds)
                 {
                     var character = await _dbContext.Characters.FindAsync(characterId);
@@ -100,8 +109,8 @@ namespace FilmAPI.Services.Movies
                         movie.Characters.Add(character);
                     }
                 }
-                await _dbContext.SaveChangesAsync();
 
+                await _dbContext.SaveChangesAsync();
             }
         }
     }
