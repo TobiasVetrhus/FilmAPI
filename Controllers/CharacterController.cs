@@ -1,4 +1,5 @@
-﻿using FilmAPI.Data.Models;
+﻿using FilmAPI.Data.Exceptions;
+using FilmAPI.Data.Models;
 using FilmAPI.Services.Characters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,33 +17,77 @@ namespace FilmAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<Character>>> GetCharacters()
         {
-            throw new NotImplementedException();
+            return Ok(await _characterService.GetAllAsync());
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<Character>> GetCharacterById(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _characterService.GetByIdAsync(id);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("byname/{name}")]
+        public async Task<ActionResult<IEnumerable<Character>>> GetCharacterByName(string name)
+        {
+            try
+            {
+                var characters = await _characterService.GetByNameAsync(name);
+                return Ok(characters);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Save([FromBody] Character character)
+        public async Task<ActionResult<Character>> PostCharacter(Character character)
         {
-            throw new NotImplementedException();
+            await _characterService.AddAsync(character);
+            return CreatedAtAction("GetCharacter", new { id = character.Id }, character);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id)
+        public async Task<IActionResult> PutCharacter(int id, Character character)
         {
-            throw new NotImplementedException();
+            if (id != character.Id)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                await _characterService.UpdateAsync(character);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteCharacter(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _characterService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (EntityNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
