@@ -1,4 +1,4 @@
-﻿namespace FilmAPI.DTOs
+﻿namespace FilmAPI.Data.DTOs.Movies
 {
     public class MovieDto
     {
