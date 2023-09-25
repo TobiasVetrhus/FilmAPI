@@ -1,20 +1,25 @@
+using FilmAPI.Data.Models;
+using FilmAPI.Services.Characters;
+using FilmAPI.Services.Franchises;
+using FilmAPI.Services.Movies;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+//Configure Services
+builder.Services.AddDbContext<MoviesDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MoviesDb"));
+});
+
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<ICharacterService, CharacterService>();
+builder.Services.AddScoped<IFranchiseService, FranchiseService>();
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 
