@@ -1,6 +1,6 @@
-﻿using FilmAPI.Data.Exceptions;
+﻿using FilmAPI.Data.DTOs.Movies;
+using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
-using FilmAPI.DTOs;
 using FilmAPI.Services.Movies;
 using Microsoft.AspNetCore.Mvc;
 

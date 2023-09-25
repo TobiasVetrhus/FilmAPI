@@ -1,4 +1,4 @@
-﻿namespace FilmAPI.DTOs
+﻿namespace FilmAPI.Data.DTOs.Movies
 {
     /// <summary>
     /// Data transfer object (DTO) for representing movie information.
