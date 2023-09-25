@@ -4,28 +4,18 @@ namespace FilmAPI.Data.Models
 {
     public class MoviesDbContext : DbContext
     {
-        private readonly IConfiguration _configuration;
-
         public MoviesDbContext(DbContextOptions options) : base(options) { }
-
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Character> Characters { get; set; }
         public DbSet<Franchise> Franchises { get; set; }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            string connectionString = _configuration.GetConnectionString("DefaultConnection");
-
-            optionsBuilder.UseSqlServer(connectionString);
-            optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Characters
             modelBuilder.Entity<Character>().HasData(
-                new Character() { Id = 1, FullName = "Katniss Everdeen", Alias = "The Girl on Fire", Gender = "Female" },
-                new Character() { Id = 2, FullName = "Peeta Mellark", Gender = "Male" },
-                new Character() { Id = 3, FullName = "Anakin Skywalker", Alias = "The Chosen One", Gender = "Male" }
+                new Character() { Id = 1, FullName = "Katniss Everdeen", Alias = "The Girl on Fire", Gender = "Female", Picture = "https://static.wikia.nocookie.net/thehungergames/images/3/34/Katniss_Hunting.jpg/revision/latest?cb=20190816160031" },
+                new Character() { Id = 2, FullName = "Peeta Mellark", Alias = "", Gender = "Male", Picture = "https://infernalimagination.files.wordpress.com/2013/11/peeta-river.jpg" },
+                new Character() { Id = 3, FullName = "Anakin Skywalker", Alias = "The Chosen One", Gender = "Male", Picture = "https://static.wikia.nocookie.net/starwars/images/6/6f/Anakin_Skywalker_RotS.png/revision/latest?cb=20130621175844" }
                 );
 
             //Movies
