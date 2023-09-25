@@ -4,7 +4,7 @@ namespace FilmAPI.Services.Characters
 {
     public interface ICharacterService : ICrudService<Character, int>
     {
-        Task<Character> GetByNameAsync(string name);
+        Task<IEnumerable<Character>> GetByNameAsync(string name);
 
     }
 }
