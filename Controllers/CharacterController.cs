@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FilmAPI.Controllers
 {
-    [Route("api/v1/character")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class CharacterController : ControllerBase
     {
@@ -53,7 +53,7 @@ namespace FilmAPI.Controllers
         public async Task<ActionResult<Character>> PostCharacter(Character character)
         {
             await _characterService.AddAsync(character);
-            return CreatedAtAction("GetCharacter", new { id = character.Id }, character);
+            return CreatedAtAction("GetCharacterById", new { id = character.Id }, character);
         }
 
         [HttpPut("{id}")]
