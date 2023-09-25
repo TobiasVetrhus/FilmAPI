@@ -15,7 +15,6 @@ namespace FilmAPI.Services.Characters
 
         public async Task<Character> AddAsync(Character obj)
         {
-            obj.Movies.Clear();
             await _dbContext.Characters.AddAsync(obj);
             await _dbContext.SaveChangesAsync();
             return obj;

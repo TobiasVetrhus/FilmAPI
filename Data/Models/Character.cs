@@ -11,14 +11,14 @@ namespace FilmAPI.Data.Models
         [StringLength(100)]
         public string FullName { get; set; }
         [StringLength(50)]
-        public string Alias { get; set; }
+        public string? Alias { get; set; }
         [StringLength(10)]
         public string Gender { get; set; }
         [StringLength(2048)]
-        public string Picture { get; set; }
+        public string? Picture { get; set; }
 
         //Navigation
-        public ICollection<Movie> Movies { get; set; } // M-M
+        public ICollection<Movie>? Movies { get; set; } // M-M
 
     }
 }
