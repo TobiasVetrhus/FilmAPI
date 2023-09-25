@@ -23,19 +23,14 @@ namespace FilmAPI.Services.Movies
         // Add a new movie
         public async Task<Movie> AddAsync(Movie obj)
         {
-            //Check if the provided movie object is valid
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj));
             }
-            //try
-            //{
+
             _dbContext.Movies.Add(obj);
             await _dbContext.SaveChangesAsync();
             return obj;
-            //}
-            //catch (DbUpdateException ex)
-            //{ }
         }
 
 
@@ -45,7 +40,9 @@ namespace FilmAPI.Services.Movies
             var movieToDelete = await _dbContext.Movies.FindAsync(id);
             if (movieToDelete != null)
             {
-                _dbContext.Movies.Remove(movieToDelete);
+                // Handle delete in a way that sets related data to null
+                movieToDelete.Characters.Clear(); // Clear character associations
+                movieToDelete.FranchiseId = null; // Set franchise to null
                 await _dbContext.SaveChangesAsync();
             }
         }
@@ -85,7 +82,10 @@ namespace FilmAPI.Services.Movies
         // Update the characters associated with a movie
         public async Task UpdateCharactersAsync(ICollection<int> characterIds, int movieId)
         {
-            var movie = await _dbContext.Movies.Include(m => m.Characters).FirstOrDefaultAsync(m => m.Id == movieId);
+            var movie = await _dbContext.Movies
+            .Include(m => m.Characters)
+            .FirstOrDefaultAsync(m => m.Id == movieId);
+
             if (movie == null)
             {
                 // Clear existing character associations
