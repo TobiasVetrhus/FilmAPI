@@ -1,4 +1,5 @@
-﻿namespace FilmAPI.Services
+﻿using FilmAPI.Services;
+namespace FilmAPI.Services
 {
     public interface ICrudService<T, ID>
     {
