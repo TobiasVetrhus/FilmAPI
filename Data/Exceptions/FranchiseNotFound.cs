@@ -2,11 +2,11 @@
 {
     public class FranchiseNotFound : EntityNotFoundException
     {
-        public FranchiseNotFoundException(int id)
+        public FranchiseNotFound(int id)
             : base("Franchise", id)
         { }
 
-        public FranchiseNotFoundException(string name)
+        public FranchiseNotFound(string name)
             : base("Franchise", name)
         { }
     }

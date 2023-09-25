@@ -1,4 +1,6 @@
-﻿using FilmAPI.Data.Exceptions;
+﻿using AutoMapper;
+using FilmAPI.Data.DTOs.Characters;
+using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Characters;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +12,12 @@ namespace FilmAPI.Controllers
     public class CharacterController : ControllerBase
     {
         private readonly ICharacterService _characterService;
+        private readonly IMapper _mapper;
 
-        public CharacterController(ICharacterService characterService)
+        public CharacterController(ICharacterService characterService, IMapper mapper)
         {
             _characterService = characterService;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -23,11 +27,12 @@ namespace FilmAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Character>> GetCharacterById(int id)
+        public async Task<ActionResult<CharacterDTO>> GetCharacterById(int id)
         {
             try
             {
-                return await _characterService.GetByIdAsync(id);
+                var character = await _characterService.GetByIdAsync(id);
+                return _mapper.Map<CharacterDTO>(character);
             }
             catch (EntityNotFoundException ex)
             {
