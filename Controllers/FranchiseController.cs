@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FilmAPI.Controllers
 {
-    [Route("api/v1/movie")]
+    [Route("api/v1/franchise")]
     [ApiController]
     public class FranchiseController : ControllerBase
     {

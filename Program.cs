@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSwaggerGen();
 
 //Configure Services
 builder.Services.AddDbContext<MoviesDbContext>(options =>
@@ -20,6 +21,14 @@ builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IFranchiseService, FranchiseService>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseRouting();
 
 app.UseHttpsRedirection();
 
