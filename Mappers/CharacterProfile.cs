@@ -11,7 +11,7 @@ namespace FilmAPI.Mappers
             CreateMap<Character, CharacterPostDTO>().ReverseMap();
             CreateMap<Character, CharacterPutDTO>().ReverseMap();
             CreateMap<Character, CharacterDTO>()
-                .ForMember(cdto => cdto.Movies, options => options.MapFrom(c => c.Movies.Select(m => m.Id).ToArray()));
+                .ForMember(cdto => cdto.MovieIds, options => options.MapFrom(c => c.Movies.Select(m => m.Id).ToArray()));
 
         }
     }

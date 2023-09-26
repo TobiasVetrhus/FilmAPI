@@ -40,7 +40,6 @@ namespace FilmAPI.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
