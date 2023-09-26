@@ -6,5 +6,8 @@ namespace FilmAPI.Services.Characters
     {
         Task<IEnumerable<Character>> GetByNameAsync(string name);
 
+        Task UpdateMoviesAsync(int characterId, int[] movieIds);
+        Task<ICollection<Movie>> GetMoviesAsync(int id);
+
     }
 }

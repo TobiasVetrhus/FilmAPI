@@ -35,13 +35,14 @@ namespace FilmAPI.Services.Characters
 
         public async Task<IEnumerable<Character>> GetAllAsync()
         {
-            return await _dbContext.Characters.ToListAsync();
+            return await _dbContext.Characters.Include(c => c.Movies).ToListAsync();
         }
 
         public async Task<Character> GetByIdAsync(int id)
         {
             var character = await _dbContext.Characters
                 .Where(c => c.Id == id)
+                .Include(c => c.Movies)
                 .FirstAsync();
 
             if (character is null)
@@ -62,6 +63,25 @@ namespace FilmAPI.Services.Characters
             return characters;
         }
 
+        public async Task<ICollection<Movie>> GetMoviesAsync(int id)
+        {
+            if (!await CharacterExistsAsync(id))
+                throw new CharacterNotFound(id);
+
+            var character = await _dbContext.Characters
+                .Include(c => c.Movies)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (character is null)
+            {
+                return character.Movies.ToList();
+            }
+            else
+            {
+                throw new CharacterNotFound(id);
+            }
+        }
+
         public async Task<Character> UpdateAsync(Character obj)
         {
             if (!await CharacterExistsAsync(obj.Id))
@@ -72,6 +92,33 @@ namespace FilmAPI.Services.Characters
             _dbContext.SaveChanges();
 
             return obj;
+        }
+
+        public async Task UpdateMoviesAsync(int characterId, int[] movieIds)
+        {
+            var character = await _dbContext.Characters
+                .Include(c => c.Movies)
+                .FirstOrDefaultAsync(c => c.Id == characterId);
+
+            if (character != null)
+            {
+                character.Movies.Clear();
+
+                foreach (int id in movieIds)
+                {
+                    if (!await CharacterExistsAsync(id))
+                        throw new CharacterNotFound(id);
+
+                    var movie = await _dbContext.Movies.FindAsync(id);
+                    character.Movies.Add(movie);
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new CharacterNotFound(characterId);
+            }
         }
 
         private async Task<bool> CharacterExistsAsync(int id)

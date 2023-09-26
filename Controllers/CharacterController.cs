@@ -21,9 +21,11 @@ namespace FilmAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Character>>> GetCharacters()
+        public async Task<ActionResult<IEnumerable<CharacterDTO>>> GetCharacters()
         {
-            return Ok(await _characterService.GetAllAsync());
+            var characters = await _characterService.GetAllAsync();
+            var characterDTOs = _mapper.Map<IEnumerable<CharacterDTO>>(characters);
+            return Ok(characterDTOs);
         }
 
         [HttpGet("{id}")]
@@ -41,12 +43,13 @@ namespace FilmAPI.Controllers
         }
 
         [HttpGet("byname/{name}")]
-        public async Task<ActionResult<IEnumerable<Character>>> GetCharacterByName(string name)
+        public async Task<ActionResult<IEnumerable<CharacterDTO>>> GetCharacterByName(string name)
         {
             try
             {
                 var characters = await _characterService.GetByNameAsync(name);
-                return Ok(characters);
+                var charactersDTOs = _mapper.Map<IEnumerable<CharacterDTO>>(characters);
+                return Ok(charactersDTOs);
             }
             catch (EntityNotFoundException ex)
             {
@@ -55,14 +58,15 @@ namespace FilmAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Character>> PostCharacter(Character character)
+        public async Task<ActionResult<CharacterDTO>> PostCharacter(CharacterPostDTO character)
         {
-            await _characterService.AddAsync(character);
-            return CreatedAtAction("GetCharacterById", new { id = character.Id }, character);
+            var newCharacter = await _characterService.AddAsync(_mapper.Map<Character>(character));
+
+            return CreatedAtAction("GetCharacterById", new { id = newCharacter.Id }, _mapper.Map<CharacterDTO>(newCharacter));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCharacter(int id, Character character)
+        public async Task<IActionResult> PutCharacter(int id, CharacterPutDTO character)
         {
             if (id != character.Id)
             {
@@ -71,7 +75,7 @@ namespace FilmAPI.Controllers
 
             try
             {
-                await _characterService.UpdateAsync(character);
+                await _characterService.UpdateAsync(_mapper.Map<Character>(character));
             }
             catch (EntityNotFoundException ex)
             {
@@ -79,6 +83,24 @@ namespace FilmAPI.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPut("{id}/movies")]
+        public async Task<IActionResult> UpdateMovies(int id, [FromBody] int[] movies)
+        {
+            try
+            {
+                await _characterService.UpdateMoviesAsync(id, movies);
+                return NoContent();
+            }
+            catch (CharacterNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
