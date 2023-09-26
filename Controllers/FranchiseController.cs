@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using FilmAPI.Data.DTOs.Franchises; 
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Franchises;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +14,12 @@ namespace FilmAPI.Controllers
     public class FranchiseController : ControllerBase
     {
         private readonly IFranchiseService _franchiseService;
+        private readonly IMapper _mapper; // Inject IMapper
 
-        public FranchiseController(IFranchiseService franchiseService)
+        public FranchiseController(IFranchiseService franchiseService, IMapper mapper)
         {
             _franchiseService = franchiseService;
+            _mapper = mapper; // Inject IMapper
         }
 
         /// <summary>
@@ -25,7 +29,8 @@ namespace FilmAPI.Controllers
         public async Task<IActionResult> GetAll()
         {
             var franchises = await _franchiseService.GetAllAsync();
-            return Ok(franchises);
+            var franchiseDTOs = _mapper.Map<IEnumerable<FranchiseDTO>>(franchises); // Map to DTO
+            return Ok(franchiseDTOs); // Return DTOs
         }
 
         /// <summary>
@@ -40,31 +45,34 @@ namespace FilmAPI.Controllers
                 return NotFound(); // 404 Not Found
             }
 
-            return Ok(franchise);
+            var franchiseDTO = _mapper.Map<FranchiseDTO>(franchise); // Map to DTO
+            return Ok(franchiseDTO); // Return DTO
         }
 
         /// <summary>
         /// Create a new franchise.
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Save([FromBody] Franchise franchise)
+        public async Task<IActionResult> Save([FromBody] FranchiseDTO franchiseDTO) // Use FranchiseDTO
         {
-            if (franchise == null)
+            if (franchiseDTO == null)
             {
                 return BadRequest(); // 400 Bad Request
             }
 
+            var franchise = _mapper.Map<Franchise>(franchiseDTO); // Map DTO to entity
             var savedFranchise = await _franchiseService.AddAsync(franchise);
-            return CreatedAtAction(nameof(GetById), new { id = savedFranchise.Id }, savedFranchise);
+            var savedFranchiseDTO = _mapper.Map<FranchiseDTO>(savedFranchise); // Map to DTO
+            return CreatedAtAction(nameof(GetById), new { id = savedFranchiseDTO.Id }, savedFranchiseDTO);
         }
 
         /// <summary>
         /// Update an existing franchise by ID.
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Franchise franchise)
+        public async Task<IActionResult> Update(int id, [FromBody] FranchiseDTO franchiseDTO) // Use FranchiseDTO
         {
-            if (franchise == null || id != franchise.Id)
+            if (franchiseDTO == null || id != franchiseDTO.Id)
             {
                 return BadRequest(); // 400 Bad Request
             }
@@ -75,6 +83,7 @@ namespace FilmAPI.Controllers
                 return NotFound(); // 404 Not Found
             }
 
+            var franchise = _mapper.Map<Franchise>(franchiseDTO); // Map DTO to entity
             await _franchiseService.UpdateAsync(franchise);
             return NoContent(); // 204 No Content
         }
