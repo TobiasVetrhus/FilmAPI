@@ -2,11 +2,11 @@
 {
     public class CharacterNotFound : EntityNotFoundException
     {
-        public CharacterNotFoundException(int id)
+        public CharacterNotFound(int id)
             : base("Character", id)
         { }
 
-        public CharacterNotFoundException(string name)
+        public CharacterNotFound(string name)
             : base("Character", name)
         { }
     }

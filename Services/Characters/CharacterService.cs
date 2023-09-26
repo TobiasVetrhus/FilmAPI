@@ -81,12 +81,12 @@ namespace FilmAPI.Services.Characters
 
         private static void FailWithCharacterNotFound(int id)
         {
-            throw new EntityNotFoundException(id);
+            throw new CharacterNotFound(id);
         }
 
         private static void FailWithCharacterNameNotFound(string name)
         {
-            throw new EntityNotFoundException(name);
+            throw new CharacterNotFound(name);
         }
 
     }

@@ -76,13 +76,13 @@ namespace FilmAPI.Controllers
                 var movie = await _movieService.GetByIdAsync(id);
                 if (movie == null)
                 {
-                    throw new MovieNotFoundException(id);
+                    throw new MovieNotFound(id);
                 }
 
                 var movieDto = MapMovieToDto(movie);
                 return Ok(movieDto);
             }
-            catch (MovieNotFoundException ex)
+            catch (MovieNotFound ex)
             {
                 return NotFound(ex.Message);
             }
@@ -137,7 +137,7 @@ namespace FilmAPI.Controllers
                 var existingMovie = await _movieService.GetByIdAsync(id);
                 if (existingMovie == null)
                 {
-                    throw new MovieNotFoundException(id);
+                    throw new MovieNotFound(id);
                 }
 
                 // Map the properties from the DTO to the existing movie entity
@@ -152,7 +152,7 @@ namespace FilmAPI.Controllers
 
                 return Ok(MapMovieToDto(updatedMovie));
             }
-            catch (MovieNotFoundException ex)
+            catch (MovieNotFound ex)
             {
                 return NotFound(ex.Message);
             }
@@ -175,14 +175,14 @@ namespace FilmAPI.Controllers
                 var existingMovie = await _movieService.GetByIdAsync(id);
                 if (existingMovie == null)
                 {
-                    throw new MovieNotFoundException(id);
+                    throw new MovieNotFound(id);
                 }
 
                 await _movieService.DeleteAsync(id);
 
                 return NoContent();
             }
-            catch (MovieNotFoundException ex)
+            catch (MovieNotFound ex)
             {
                 return NotFound(ex.Message); // Movie not found
             }
