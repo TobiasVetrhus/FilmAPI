@@ -62,6 +62,8 @@ namespace FilmAPI.Controllers
         {
             var newCharacter = await _characterService.AddAsync(_mapper.Map<Character>(character));
 
+            await _characterService.UpdateMoviesAsync(newCharacter.Id, character.MovieIds);
+
             return CreatedAtAction("GetCharacterById", new { id = newCharacter.Id }, _mapper.Map<CharacterDTO>(newCharacter));
         }
 
@@ -75,7 +77,8 @@ namespace FilmAPI.Controllers
 
             try
             {
-                await _characterService.UpdateAsync(_mapper.Map<Character>(character));
+                var updatedCharacter = await _characterService.UpdateAsync(_mapper.Map<Character>(character));
+                await _characterService.UpdateMoviesAsync(updatedCharacter.Id, character.MovieIds);
             }
             catch (EntityNotFoundException ex)
             {
@@ -93,13 +96,9 @@ namespace FilmAPI.Controllers
                 await _characterService.UpdateMoviesAsync(id, movies);
                 return NoContent();
             }
-            catch (CharacterNotFound ex)
+            catch (EntityNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
             }
         }
 

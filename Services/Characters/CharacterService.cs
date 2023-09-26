@@ -22,13 +22,12 @@ namespace FilmAPI.Services.Characters
         public async Task DeleteAsync(int id)
         {
             if (!await CharacterExistsAsync(id))
-                FailWithCharacterNotFound(id);
+                throw new EntityNotFoundException(nameof(Character), id);
 
             var character = await _dbContext.Characters
                 .Where(c => c.Id == id)
                 .FirstAsync();
 
-            character.Movies.Clear();
             _dbContext.Characters.Remove(character);
             await _dbContext.SaveChangesAsync();
         }
@@ -46,7 +45,7 @@ namespace FilmAPI.Services.Characters
                 .FirstAsync();
 
             if (character is null)
-                FailWithCharacterNotFound(id);
+                throw new EntityNotFoundException(nameof(Character), id);
 
             return character;
         }
@@ -58,7 +57,7 @@ namespace FilmAPI.Services.Characters
                 .ToListAsync();
 
             if (characters is null)
-                FailWithCharacterNameNotFound(name);
+                throw new EntityNotFoundException(nameof(Character), name);
 
             return characters;
         }
@@ -66,7 +65,7 @@ namespace FilmAPI.Services.Characters
         public async Task<ICollection<Movie>> GetMoviesAsync(int id)
         {
             if (!await CharacterExistsAsync(id))
-                throw new CharacterNotFound(id);
+                throw new EntityNotFoundException(nameof(Character), id);
 
             var character = await _dbContext.Characters
                 .Include(c => c.Movies)
@@ -78,16 +77,15 @@ namespace FilmAPI.Services.Characters
             }
             else
             {
-                throw new CharacterNotFound(id);
+                throw new EntityNotFoundException(nameof(Character), id);
             }
         }
 
         public async Task<Character> UpdateAsync(Character obj)
         {
             if (!await CharacterExistsAsync(obj.Id))
-                FailWithCharacterNotFound(obj.Id);
+                throw new EntityNotFoundException(nameof(Character), obj.Id);
 
-            obj.Movies.Clear();
             _dbContext.Entry(obj).State = EntityState.Modified;
             _dbContext.SaveChanges();
 
@@ -106,8 +104,8 @@ namespace FilmAPI.Services.Characters
 
                 foreach (int id in movieIds)
                 {
-                    if (!await CharacterExistsAsync(id))
-                        throw new CharacterNotFound(id);
+                    if (!await MovieExistsAsync(id))
+                        throw new EntityNotFoundException(nameof(Movie), id);
 
                     var movie = await _dbContext.Movies.FindAsync(id);
                     character.Movies.Add(movie);
@@ -117,7 +115,7 @@ namespace FilmAPI.Services.Characters
             }
             else
             {
-                throw new CharacterNotFound(characterId);
+                throw new EntityNotFoundException(nameof(Character), characterId);
             }
         }
 
@@ -126,15 +124,9 @@ namespace FilmAPI.Services.Characters
             return await _dbContext.Characters.AnyAsync(c => c.Id == id);
         }
 
-        private static void FailWithCharacterNotFound(int id)
+        private async Task<bool> MovieExistsAsync(int id)
         {
-            throw new CharacterNotFound(id);
+            return await _dbContext.Movies.AnyAsync(m => m.Id == id);
         }
-
-        private static void FailWithCharacterNameNotFound(string name)
-        {
-            throw new CharacterNotFound(name);
-        }
-
     }
 }

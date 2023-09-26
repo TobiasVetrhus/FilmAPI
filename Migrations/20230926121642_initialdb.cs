@@ -19,9 +19,9 @@ namespace FilmAPI.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Alias = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    Picture = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false)
+                    Alias = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    Picture = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true)
                 },
                 constraints: table =>
                 {
