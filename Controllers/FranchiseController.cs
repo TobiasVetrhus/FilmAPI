@@ -1,8 +1,10 @@
-﻿using System;
+﻿using FilmAPI.Data.DTOs.Movies;
+using FilmAPI.Data.DTOs.Characters;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
-using FilmAPI.Data.DTOs.Franchises; 
+using FilmAPI.Data.DTOs.Franchises;
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Franchises;
 using Microsoft.AspNetCore.Mvc;
@@ -102,6 +104,38 @@ namespace FilmAPI.Controllers
 
             await _franchiseService.DeleteAsync(id);
             return NoContent(); // 204 No Content
+        }
+
+        /// <summary>
+        /// Get all movies in a franchise by franchise ID.
+        /// </summary>
+        [HttpGet("{id}/movies")]
+        public async Task<IActionResult> GetFranchiseMovies(int id)
+        {
+            var movies = await _franchiseService.GetFranchiseMoviesAsync(id);
+            if (movies == null)
+            {
+                return NotFound();
+            }
+
+            var movieDTOs = _mapper.Map<IEnumerable<MovieDto>>(movies);
+            return Ok(movieDTOs);
+        }
+
+        /// <summary>
+        /// Get all characters in a franchise by franchise ID.
+        /// </summary>
+        [HttpGet("{id}/characters")]
+        public async Task<IActionResult> GetFranchiseCharacters(int id)
+        {
+            var characters = await _franchiseService.GetFranchiseCharactersAsync(id);
+            if (characters == null)
+            {
+                return NotFound();
+            }
+
+            var characterDTOs = _mapper.Map<IEnumerable<CharacterDTO>>(characters);
+            return Ok(characterDTOs);
         }
     }
 }

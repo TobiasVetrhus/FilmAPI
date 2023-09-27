@@ -1,5 +1,7 @@
 ﻿using FilmAPI.Data.Models;
 
+ using FilmAPI.Data.Models;
+
 namespace FilmAPI.Services.Franchises
 {
     public interface IFranchiseService : ICrudService<Franchise, int>

@@ -119,9 +119,13 @@ namespace FilmAPI.Services.Franchises
             }
         }
 
-        public Task<Franchise> GetFranchiseByIdAsync(int id)
+        /// <summary>
+        /// Get a franchise by ID.
+        /// </summary>
+        public async Task<Franchise> GetFranchiseByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Franchises.FindAsync(id);
         }
     }
 }
+
