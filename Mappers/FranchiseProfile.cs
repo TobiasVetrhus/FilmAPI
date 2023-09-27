@@ -8,8 +8,12 @@ namespace FilmAPI.Mappers
     {
         public FranchiseProfile()
         {
-            CreateMap<Franchise, FranchiseDTO>().ReverseMap();
-         
+            CreateMap<Franchise, FranchisePostDTO>().ReverseMap();
+            CreateMap<Franchise, FranchisePutDTO>().ReverseMap();
+
+            CreateMap<Franchise, FranchiseDTO>()
+                .ForMember(fdto => fdto.Movies, options => options.MapFrom(f => f.Movies.Select(m => m.Id).ToArray()));
+
         }
     }
 }
