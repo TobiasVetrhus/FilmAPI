@@ -9,7 +9,7 @@ namespace FilmAPI.Services.Characters
         /// Returns a list of characters by the given name.
         /// </summary>
         /// <param name="name"></param>
-        /// <exception cref="EntityNotFoundException"></exception>
+        /// <exception cref="CharacterNotFound"></exception>
         /// <returns></returns>
         Task<IEnumerable<Character>> GetByNameAsync(string name);
 
@@ -19,8 +19,16 @@ namespace FilmAPI.Services.Characters
         /// </summary>
         /// <param name="characterId"></param>
         /// <param name="movieIds"></param>
-        /// <exception cref="EntityNotFoundException"></exception>
+        /// <exception cref="CharacterNotFound"></exception>
         /// <returns></returns>
         Task UpdateMoviesAsync(int characterId, int[] movieIds);
+
+        /// <summary>
+        /// Gets all the movies the character is associated with.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <exception cref="CharacterNotFound"></exception>
+        /// <returns></returns>
+        Task<ICollection<Movie>> GetMoviesAsync(int characterId);
     }
 }

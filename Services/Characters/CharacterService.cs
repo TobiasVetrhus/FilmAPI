@@ -59,12 +59,33 @@ namespace FilmAPI.Services.Characters
         {
             var characters = await _dbContext.Characters
                 .Where(c => c.FullName.Contains(name))
+                .Include(c => c.Movies)
                 .ToListAsync();
 
-            if (characters is null)
+            if (!characters.Any())
                 throw new CharacterNotFound(name);
 
             return characters;
+        }
+
+        //Retrieves the character's movies based on the 'characterId'
+        public async Task<ICollection<Movie>> GetMoviesAsync(int characterId)
+        {
+            if (!await CharacterExistsAsync(characterId))
+                throw new CharacterNotFound(characterId);
+
+            var character = await _dbContext.Characters
+                .Include(c => c.Movies)
+                .FirstOrDefaultAsync(c => c.Id == characterId);
+
+            if (character != null)
+            {
+                return character.Movies.ToList();
+            }
+            else
+            {
+                throw new CharacterNotFound(characterId);
+            }
         }
 
         public async Task<Character> UpdateAsync(Character obj)
