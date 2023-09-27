@@ -114,7 +114,7 @@ namespace FilmAPI.Services.Characters
                 foreach (int id in movieIds)
                 {
                     if (!await MovieExistsAsync(id))
-                        throw new CharacterNotFound(id);
+                        throw new MovieNotFound(id);
 
                     var movie = await _dbContext.Movies.FindAsync(id);
                     character.Movies.Add(movie);

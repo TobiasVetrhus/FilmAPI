@@ -49,7 +49,7 @@ namespace FilmAPI.Controllers
                 var character = await _characterService.GetByIdAsync(id);
                 return _mapper.Map<CharacterDTO>(character);
             }
-            catch (EntityNotFoundException ex)
+            catch (CharacterNotFound ex)
             {
                 return NotFound(ex.Message);
             }

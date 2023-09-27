@@ -1,10 +1,8 @@
-﻿using FilmAPI.Data.DTOs.Movies;
+﻿using AutoMapper;
 using FilmAPI.Data.DTOs.Characters;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
 using FilmAPI.Data.DTOs.Franchises;
+using FilmAPI.Data.DTOs.Movies;
+using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Franchises;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +26,7 @@ namespace FilmAPI.Controllers
         /// Get all franchises.
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<FranchiseDTO>>> GetAll()
         {
             var franchises = await _franchiseService.GetAllAsync();
             var franchiseDTOs = _mapper.Map<IEnumerable<FranchiseDTO>>(franchises); // Map to DTO
@@ -39,55 +37,52 @@ namespace FilmAPI.Controllers
         /// Get a franchise by ID.
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<FranchiseDTO>> GetById(int id)
         {
-            var franchise = await _franchiseService.GetByIdAsync(id);
-            if (franchise == null)
+            try
             {
-                return NotFound(); // 404 Not Found
+                var franchise = await _franchiseService.GetByIdAsync(id);
+                return _mapper.Map<FranchiseDTO>(franchise);
             }
-
-            var franchiseDTO = _mapper.Map<FranchiseDTO>(franchise); // Map to DTO
-            return Ok(franchiseDTO); // Return DTO
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         /// <summary>
         /// Create a new franchise.
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Save([FromBody] FranchiseDTO franchiseDTO) // Use FranchiseDTO
+        public async Task<ActionResult<FranchiseDTO>> PostFranchise(FranchisePostDTO franchise) // Use FranchiseDTO
         {
-            if (franchiseDTO == null)
-            {
-                return BadRequest(); // 400 Bad Request
-            }
+            var newFranchise = await _franchiseService.AddAsync(_mapper.Map<Franchise>(franchise));
 
-            var franchise = _mapper.Map<Franchise>(franchiseDTO); // Map DTO to entity
-            var savedFranchise = await _franchiseService.AddAsync(franchise);
-            var savedFranchiseDTO = _mapper.Map<FranchiseDTO>(savedFranchise); // Map to DTO
-            return CreatedAtAction(nameof(GetById), new { id = savedFranchiseDTO.Id }, savedFranchiseDTO);
+            return CreatedAtAction("GetById", new { id = newFranchise.Id }, _mapper.Map<FranchiseDTO>(newFranchise));
         }
 
         /// <summary>
         /// Update an existing franchise by ID.
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] FranchiseDTO franchiseDTO) // Use FranchiseDTO
+        public async Task<IActionResult> Update(int id, FranchisePutDTO franchise) // Use FranchiseDTO
         {
-            if (franchiseDTO == null || id != franchiseDTO.Id)
+            if (id != franchise.Id)
             {
-                return BadRequest(); // 400 Bad Request
+                return BadRequest();
             }
 
-            var existingFranchise = await _franchiseService.GetByIdAsync(id);
-            if (existingFranchise == null)
+            try
             {
-                return NotFound(); // 404 Not Found
+                var updatedFranchise = await _franchiseService.UpdateAsync(_mapper.Map<Franchise>(franchise));
+
+            }
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
             }
 
-            var franchise = _mapper.Map<Franchise>(franchiseDTO); // Map DTO to entity
-            await _franchiseService.UpdateAsync(franchise);
-            return NoContent(); // 204 No Content
+            return NoContent();
         }
 
         /// <summary>
@@ -96,14 +91,15 @@ namespace FilmAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var existingFranchise = await _franchiseService.GetByIdAsync(id);
-            if (existingFranchise == null)
+            try
             {
-                return NotFound(); // 404 Not Found
+                await _franchiseService.DeleteAsync(id);
+                return NoContent();
             }
-
-            await _franchiseService.DeleteAsync(id);
-            return NoContent(); // 204 No Content
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         /// <summary>
