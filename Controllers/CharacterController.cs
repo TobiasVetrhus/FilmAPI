@@ -68,7 +68,7 @@ namespace FilmAPI.Controllers
                 var charactersDTOs = _mapper.Map<IEnumerable<CharacterDTO>>(characters);
                 return Ok(charactersDTOs);
             }
-            catch (EntityNotFoundException ex)
+            catch (CharacterNotFound ex)
             {
                 return NotFound(ex.Message);
             }
@@ -108,7 +108,7 @@ namespace FilmAPI.Controllers
                 var updatedCharacter = await _characterService.UpdateAsync(_mapper.Map<Character>(character));
                 await _characterService.UpdateMoviesAsync(updatedCharacter.Id, character.MovieIds);
             }
-            catch (EntityNotFoundException ex)
+            catch (CharacterNotFound ex)
             {
                 return NotFound(ex.Message);
             }
@@ -130,7 +130,7 @@ namespace FilmAPI.Controllers
                 await _characterService.UpdateMoviesAsync(id, movies);
                 return NoContent();
             }
-            catch (EntityNotFoundException ex)
+            catch (CharacterNotFound ex)
             {
                 return NotFound(ex.Message);
             }
@@ -149,7 +149,7 @@ namespace FilmAPI.Controllers
                 await _characterService.DeleteAsync(id);
                 return NoContent();
             }
-            catch (EntityNotFoundException ex)
+            catch (CharacterNotFound ex)
             {
                 return NotFound(ex.Message);
             }
