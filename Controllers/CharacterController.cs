@@ -4,11 +4,14 @@ using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Characters;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace FilmAPI.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ApiConventionType(typeof(DefaultApiConventions))]
     public class CharacterController : ControllerBase
     {
         private readonly ICharacterService _characterService;
@@ -20,6 +23,10 @@ namespace FilmAPI.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Gets all characters.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CharacterDTO>>> GetCharacters()
         {
@@ -28,6 +35,11 @@ namespace FilmAPI.Controllers
             return Ok(characterDTOs);
         }
 
+        /// <summary>
+        /// Gets a character by given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<CharacterDTO>> GetCharacterById(int id)
         {
@@ -42,6 +54,11 @@ namespace FilmAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a character by given name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         [HttpGet("byname/{name}")]
         public async Task<ActionResult<IEnumerable<CharacterDTO>>> GetCharacterByName(string name)
         {
@@ -57,6 +74,11 @@ namespace FilmAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Adds a new character.
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<CharacterDTO>> PostCharacter(CharacterPostDTO character)
         {
@@ -67,6 +89,12 @@ namespace FilmAPI.Controllers
             return CreatedAtAction("GetCharacterById", new { id = newCharacter.Id }, _mapper.Map<CharacterDTO>(newCharacter));
         }
 
+        /// <summary>
+        /// Updates a character.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="character"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCharacter(int id, CharacterPutDTO character)
         {
@@ -88,6 +116,12 @@ namespace FilmAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Updates a character's movies.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="movies"></param>
+        /// <returns></returns>
         [HttpPut("{id}/movies")]
         public async Task<IActionResult> UpdateMovies(int id, [FromBody] int[] movies)
         {
@@ -102,6 +136,11 @@ namespace FilmAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a character.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCharacter(int id)
         {
