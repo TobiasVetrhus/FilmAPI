@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FilmAPI.Data.DTOs.Characters;
+using FilmAPI.Data.DTOs.Movies;
 using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Characters;
@@ -67,6 +68,25 @@ namespace FilmAPI.Controllers
                 var characters = await _characterService.GetByNameAsync(name);
                 var charactersDTOs = _mapper.Map<IEnumerable<CharacterDTO>>(characters);
                 return Ok(charactersDTOs);
+            }
+            catch (CharacterNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Returns all movies associated with a character.
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <returns></returns>
+        [HttpGet("{characterId}/movies")]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(int characterId)
+        {
+            try
+            {
+                var movies = await _characterService.GetMoviesAsync(characterId);
+                return Ok(_mapper.Map<IEnumerable<MovieDto>>(movies));
             }
             catch (CharacterNotFound ex)
             {
