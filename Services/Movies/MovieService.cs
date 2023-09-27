@@ -75,6 +75,7 @@ namespace FilmAPI.Services.Movies
         public async Task<Movie> GetByIdAsync(int id)
         {
             var movie = await _dbContext.Movies
+                .Where(m => m.Id == id)
                 .Include(m => m.Characters)
                 .Include(m => m.Franchise)
                 .FirstOrDefaultAsync();

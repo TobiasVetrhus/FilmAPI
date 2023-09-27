@@ -24,7 +24,7 @@ namespace FilmAPI.Services.Characters
         {
             //Check if the character with the given 'id' exists
             if (!await CharacterExistsAsync(id))
-                throw new EntityNotFoundException(nameof(Character), id);
+                throw new CharacterNotFound(id);
 
             //Retrieve the character and remove it from the DbContext
             var character = await _dbContext.Characters
@@ -49,7 +49,7 @@ namespace FilmAPI.Services.Characters
                 .FirstAsync();
 
             if (character is null)
-                throw new EntityNotFoundException(nameof(Character), id);
+                throw new CharacterNotFound(id);
 
             return character;
         }
@@ -62,7 +62,7 @@ namespace FilmAPI.Services.Characters
                 .ToListAsync();
 
             if (characters is null)
-                throw new EntityNotFoundException(nameof(Character), name);
+                throw new CharacterNotFound(name);
 
             return characters;
         }
@@ -70,7 +70,7 @@ namespace FilmAPI.Services.Characters
         public async Task<Character> UpdateAsync(Character obj)
         {
             if (!await CharacterExistsAsync(obj.Id))
-                throw new EntityNotFoundException(nameof(Character), obj.Id);
+                throw new CharacterNotFound(obj.Id);
 
             _dbContext.Entry(obj).State = EntityState.Modified;
             _dbContext.SaveChanges();
@@ -93,7 +93,7 @@ namespace FilmAPI.Services.Characters
                 foreach (int id in movieIds)
                 {
                     if (!await MovieExistsAsync(id))
-                        throw new EntityNotFoundException(nameof(Movie), id);
+                        throw new CharacterNotFound(id);
 
                     var movie = await _dbContext.Movies.FindAsync(id);
                     character.Movies.Add(movie);
@@ -103,7 +103,7 @@ namespace FilmAPI.Services.Characters
             }
             else
             {
-                throw new EntityNotFoundException(nameof(Character), characterId);
+                throw new CharacterNotFound(characterId);
             }
         }
 

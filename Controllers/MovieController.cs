@@ -33,17 +33,10 @@ namespace FilmAPI.Controllers
         {
             try
             {
-                // Retrieve all movies from the service.
-                var movies = await _movieService.GetAllAsync();
-                // Map movie entities to MovieDto objects for the response.
-                var movieDtos = _mapper.Map<IEnumerable<MovieDto>>(movies);
-                // Return the list of movies as JSON.
-                return Ok(movieDtos);
+                return Ok(_mapper.Map<IEnumerable<MovieDto>>(await _movieService.GetAllAsync()));
             }
             catch (Exception ex)
             {
-                // Handle unexpected exceptions with a 500 Internal Server Error response
-                // and include the actual exception message in the response.
                 return StatusCode(500, "An error occurred: " + ex.Message);
             }
         }
@@ -59,35 +52,25 @@ namespace FilmAPI.Controllers
         {
             try
             {
-                // Retrieve a movie by its ID from the service.
                 var movie = await _movieService.GetByIdAsync(id);
+
                 if (movie == null)
                 {
-                    // If the movie is not found, throw a custom exception.
                     throw new MovieNotFound(id);
                 }
 
-                // Map the movie entity to a MovieDto object for the response.
                 var movieDto = _mapper.Map<MovieDto>(movie);
-
-                // Optionally, load associated characters and map them in the DTO.
-                // Example: movieDto.Characters = _mapper.Map<IEnumerable<CharacterDto>>(movie.Characters);
-
-                // Return the movie as JSON.
-                return movieDto;
+                return Ok(movieDto);
             }
             catch (MovieNotFound ex)
             {
-                // Handle the custom exception by returning a 404 Not Found response.
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                // Handle unexpected exceptions with a 500 Internal Server Error response.
                 return StatusCode(500, "An error occurred.");
             }
         }
-
 
 
         /// <summary>
@@ -221,3 +204,4 @@ namespace FilmAPI.Controllers
 
     }
 }
+
