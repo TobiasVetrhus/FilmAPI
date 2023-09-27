@@ -1,195 +1,223 @@
-﻿using FilmAPI.Data.DTOs.Movies;
+﻿using AutoMapper;
+using FilmAPI.Data.DTOs.Characters;
+using FilmAPI.Data.DTOs.Movies;
 using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
+using FilmAPI.Services.Characters;
 using FilmAPI.Services.Movies;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FilmAPI.Controllers
 {
-    /// <summary>
-    /// Controller for managing movie-related operations.
-    /// </summary>
     [Route("api/v1/movie")]
     [ApiController]
     public class MovieController : ControllerBase
     {
         private readonly IMovieService _movieService;
+        private readonly IMapper _mapper;
+        private readonly ICharacterService _characterService;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MovieController"/> class.
-        /// </summary>
-        /// <param name="movieService">The movie service.</param>
-        public MovieController(IMovieService movieService)
+        public MovieController(IMovieService movieService, IMapper mapper, ICharacterService characterService)
         {
             _movieService = movieService;
+            _mapper = mapper;
+            _characterService = characterService;
+
         }
 
         /// <summary>
-        /// Maps a <see cref="Movie"/> object to a <see cref="MovieDto"/> object.
+        /// Retrieve a list of all movies.
         /// </summary>
-        /// <param name="movie">The movie to map.</param>
-        /// <returns>The mapped <see cref="MovieDto"/>.</returns>
-        private MovieDto MapMovieToDto(Movie movie)
-        {
-            return new MovieDto
-            {
-                Id = movie.Id,
-                Title = movie.Title,
-                Genre = movie.Genre,
-                ReleaseYear = movie.ReleaseYear,
-                Director = movie.Director,
-                Picture = movie.Picture,
-                Trailer = movie.Trailer,
-            };
-        }
-
-
-        /// <summary>
-        /// Gets a list of all movies.
-        /// </summary>
-        /// <returns>A list of movie DTOs.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             try
             {
+                // Retrieve all movies from the service.
                 var movies = await _movieService.GetAllAsync();
-                var movieDtos = movies.Select(movie => MapMovieToDto(movie)).ToList();
+                // Map movie entities to MovieDto objects for the response.
+                var movieDtos = _mapper.Map<IEnumerable<MovieDto>>(movies);
+                // Return the list of movies as JSON.
                 return Ok(movieDtos);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                // Handle unexpected exceptions with a 500 Internal Server Error response
+                // and include the actual exception message in the response.
+                return StatusCode(500, "An error occurred: " + ex.Message);
             }
         }
 
+
+
         /// <summary>
-        /// Gets a movie by its ID.
+        /// Retrieve a movie by its ID.
         /// </summary>
         /// <param name="id">The ID of the movie to retrieve.</param>
-        /// <returns>The movie DTO.</returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<MovieDto>> GetById(int id)
         {
             try
             {
+                // Retrieve a movie by its ID from the service.
                 var movie = await _movieService.GetByIdAsync(id);
                 if (movie == null)
                 {
+                    // If the movie is not found, throw a custom exception.
                     throw new MovieNotFound(id);
                 }
 
-                var movieDto = MapMovieToDto(movie);
-                return Ok(movieDto);
+                // Map the movie entity to a MovieDto object for the response.
+                var movieDto = _mapper.Map<MovieDto>(movie);
+
+                // Optionally, load associated characters and map them in the DTO.
+                // Example: movieDto.Characters = _mapper.Map<IEnumerable<CharacterDto>>(movie.Characters);
+
+                // Return the movie as JSON.
+                return movieDto;
             }
             catch (MovieNotFound ex)
             {
+                // Handle the custom exception by returning a 404 Not Found response.
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                // Handle unexpected exceptions with a 500 Internal Server Error response.
+                return StatusCode(500, "An error occurred.");
             }
         }
 
+
+
         /// <summary>
-        /// Saves a new movie.
+        /// Add a new movie to the database.
         /// </summary>
-        /// <param name="movieDto">The movie DTO to save.</param>
-        /// <returns>The created movie DTO.</returns>
+        /// <param name="movieDto">The MovieDto object containing movie information.</param>
         [HttpPost]
         public async Task<IActionResult> Save([FromBody] MovieDto movieDto)
         {
             try
             {
-                // Map the MovieDto back to the Movie entity
-                var movie = new Movie
-                {
-                    Title = movieDto.Title,
-                    Genre = movieDto.Genre,
-                    ReleaseYear = movieDto.ReleaseYear,
-                    Director = movieDto.Director,
-                    Picture = movieDto.Picture,
-                    Trailer = movieDto.Trailer,
-                };
-
+                // Map the MovieDto to a Movie entity for saving.
+                var movie = _mapper.Map<Movie>(movieDto);
+                // Add the movie to the database using the service.
                 var addedMovie = await _movieService.AddAsync(movie);
-
-                return CreatedAtAction(nameof(GetById), new { id = addedMovie.Id }, MapMovieToDto(addedMovie));
+                // Map the added movie entity to a MovieDto for the response.
+                var addedMovieDto = _mapper.Map<MovieDto>(addedMovie);
+                // Return a 201 Created response with the URL to retrieve the added movie.
+                return CreatedAtAction(nameof(GetById), new { id = addedMovie.Id }, addedMovieDto);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                // Handle unexpected exceptions with a 400 Bad Request response.
+                return BadRequest($"Error: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Updates an existing movie.
+        /// Update an existing movie by its ID.
         /// </summary>
         /// <param name="id">The ID of the movie to update.</param>
-        /// <param name="movieDto">The updated movie DTO.</param>
-        /// <returns>The updated movie DTO.</returns>
+        /// <param name="movieDto">The MovieDto object containing updated movie information.</param>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] MovieDto movieDto)
         {
             try
             {
+                // Retrieve the existing movie by its ID.
                 var existingMovie = await _movieService.GetByIdAsync(id);
                 if (existingMovie == null)
                 {
+                    // If the movie is not found, throw a custom exception.
                     throw new MovieNotFound(id);
                 }
 
-                // Map the properties from the DTO to the existing movie entity
-                existingMovie.Title = movieDto.Title;
-                existingMovie.Genre = movieDto.Genre;
-                existingMovie.ReleaseYear = movieDto.ReleaseYear;
-                existingMovie.Director = movieDto.Director;
-                existingMovie.Picture = movieDto.Picture;
-                existingMovie.Trailer = movieDto.Trailer;
-
+                // Update the existing movie entity with data from the MovieDto.
+                _mapper.Map(movieDto, existingMovie);
+                // Update the movie in the database using the service.
                 var updatedMovie = await _movieService.UpdateAsync(existingMovie);
-
-                return Ok(MapMovieToDto(updatedMovie));
+                // Map the updated movie entity to a MovieDto for the response.
+                var updatedMovieDto = _mapper.Map<MovieDto>(updatedMovie);
+                // Return the updated movie as JSON.
+                return Ok(updatedMovieDto);
             }
             catch (MovieNotFound ex)
             {
+                // Handle the custom exception by returning a 404 Not Found response.
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                //Handle unexpected exceptions with a 400 Bad Request response.
+                return BadRequest($"Error: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Deletes a movie by its ID.
+        /// Delete a movie by its ID.
         /// </summary>
         /// <param name="id">The ID of the movie to delete.</param>
-        /// <returns>No content.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                var existingMovie = await _movieService.GetByIdAsync(id);
-                if (existingMovie == null)
-                {
-                    throw new MovieNotFound(id);
-                }
-
+                // Delete the movie by its ID using the service.
                 await _movieService.DeleteAsync(id);
-
+                // Return a 204 No Content response to indicate a successful deletion.
                 return NoContent();
             }
             catch (MovieNotFound ex)
             {
-                return NotFound(ex.Message); // Movie not found
+                // Handle the custom exception by returning a 404 Not Found response.
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message); // Handle other exceptions and return a bad request response
+                // Handle unexpected exceptions with a 500 Internal Server Error response.
+                return StatusCode(500, "An error occurred.");
             }
         }
+
+        [HttpGet("{id}/characters")]
+        public async Task<IActionResult> GetCharactersInMovie(int id)
+        {
+            try
+            {
+                // Retrieve character IDs associated with the movie.
+                var characterIds = await _movieService.GetCharacterIdsInMovieAsync(id);
+
+                // Retrieve character details using the CharacterService and character IDs.
+                var characterDetails = new List<CharacterDTO>();
+                foreach (var characterId in characterIds)
+                {
+                    var character = await _characterService.GetByIdAsync(characterId);
+                    if (character != null)
+                    {
+                        // Map the character entity to a CharacterDto object.
+                        var characterDto = _mapper.Map<CharacterDTO>(character);
+                        characterDetails.Add(characterDto);
+                    }
+                }
+
+                // Return the character details as JSON.
+                return Ok(characterDetails);
+            }
+            catch (MovieNotFound ex)
+            {
+                // Handle the custom exception by returning a 404 Not Found response.
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions and return an appropriate response.
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+
+
+
     }
 }
