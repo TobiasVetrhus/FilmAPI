@@ -30,10 +30,7 @@ namespace FilmAPI.Services.Movies
         }
 
 
-        /// <summary>
-        /// Retrieves a list of all movies from the database.
-        /// </summary>
-        /// <returns>A list of movie objects.</returns>
+        // Retrieves a list of all movies from the database.
         public async Task<IEnumerable<Movie>> GetAllAsync()
         {
             return await _dbContext.Movies
@@ -43,11 +40,8 @@ namespace FilmAPI.Services.Movies
         }
 
 
-        /// <summary>
-        /// Retrieves a movie by its ID from the database.
-        /// </summary>
-        /// <param name="id">The ID of the movie to retrieve.</param>
-        /// <returns>The movie object if found, otherwise throws a <see cref="MovieNotFound"/> exception.</returns>
+
+        // Retrieves a movie by its ID from the database.
         public async Task<Movie> GetByIdAsync(int id)
         {
             var existingMovie = await _dbContext.Movies
@@ -59,11 +53,7 @@ namespace FilmAPI.Services.Movies
         }
 
 
-        /// <summary>
-        /// Adds a new movie to the database.
-        /// </summary>
-        /// <param name="obj">The movie object to add.</param>
-        /// <returns>The added movie object.</returns>
+        // Adds a new movie to the database.
         public async Task<Movie> AddAsync(Movie obj)
         {
             if (!await _dbContext.Franchises.AnyAsync(f => f.Id == obj.FranchiseId.Value))
@@ -76,11 +66,7 @@ namespace FilmAPI.Services.Movies
         }
 
 
-        /// <summary>
-        /// Updates an existing movie in the database.
-        /// </summary>
-        /// <param name="obj">The movie object with updated information.</param>
-        /// <returns>The updated movie object.</returns>
+        // Updates an existing movie in the database.
         public async Task<Movie> UpdateAsync(Movie obj)
         {
             var existingMovie = await _dbContext.Movies.FindAsync(obj.Id) ?? throw new MovieNotFound(obj.Id);
@@ -94,11 +80,7 @@ namespace FilmAPI.Services.Movies
         }
 
 
-
-        /// <summary>
-        /// Deletes a movie from the database by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the movie to delete.</param>
+        // Delete a movie from the database by its ID.
         public async Task DeleteAsync(int id)
         {
             var movieToDelete = await _dbContext.Movies.FindAsync(id) ?? throw new MovieNotFound(id);
@@ -108,11 +90,7 @@ namespace FilmAPI.Services.Movies
         }
 
 
-        /// <summary>
-        /// Retrieves character IDs associated with a movie from the database.
-        /// </summary>
-        /// <param name="movieId">The ID of the movie.</param>
-        /// <returns>A list of character IDs.</returns>
+        // Retrieves character IDs associated with a movie from the database.
         public async Task<IEnumerable<int>> GetCharacterIdsInMovieAsync(int movieId)
         {
             var movie = await _dbContext.Movies
@@ -123,11 +101,7 @@ namespace FilmAPI.Services.Movies
         }
 
 
-        /// <summary>
-        /// Updates the characters associated with a movie in the database.
-        /// </summary>
-        /// <param name="movieId">The ID of the movie.</param>
-        /// <param name="characterIds">A list of character IDs to associate with the movie.</param>
+        // Updates the characters associated with a movie in the database.
         public async Task UpdateMovieCharacterAsync(int movieId, List<int> characterIds)
         {
             var movie = await _dbContext.Movies

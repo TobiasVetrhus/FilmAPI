@@ -107,6 +107,11 @@ namespace FilmAPI.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+
         }
 
 
