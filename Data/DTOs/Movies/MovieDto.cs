@@ -12,7 +12,7 @@
         public string Director { get; set; }
         public string Picture { get; set; }
         public string Trailer { get; set; }
-        public int FranchiseId { get; set; }
+        public int? FranchiseId { get; set; }
         public int[]? Characters { get; set; }
 
 

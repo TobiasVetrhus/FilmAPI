@@ -23,7 +23,7 @@ namespace FilmAPI.Data.Models
         public string Picture { get; set; }
         [StringLength(2048)]
         public string Trailer { get; set; }
-        public int FranchiseId { get; set; }
+        public int? FranchiseId { get; set; }
 
 
         /// <summary>
