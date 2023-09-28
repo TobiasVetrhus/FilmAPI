@@ -6,6 +6,7 @@ This project involves using an EntityFramwork Code First workflow to create a da
 ## Getting started
 ### Prerequisities
 - SQL Server Management Studio (SSMS)
+- Visual Studio 2022
 
 ### Installation
 1. Clone this repository
