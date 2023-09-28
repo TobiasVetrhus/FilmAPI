@@ -6,11 +6,14 @@ using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
 using FilmAPI.Services.Franchises;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace FilmAPI.Controllers
 {
     [Route("api/v1/franchise")]
     [ApiController]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ApiConventionType(typeof(DefaultApiConventions))]
     public class FranchiseController : ControllerBase
     {
         private readonly IFranchiseService _franchiseService;
