@@ -26,7 +26,7 @@ namespace FilmAPI.Services.Characters
         /// <summary>
         /// Gets all the movies the character is associated with.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="characterId"></param>
         /// <exception cref="CharacterNotFound"></exception>
         /// <returns></returns>
         Task<ICollection<Movie>> GetMoviesAsync(int characterId);

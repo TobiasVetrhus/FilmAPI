@@ -9,7 +9,7 @@ namespace FilmAPI.Data.Exceptions
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MovieNotFoundException"/> class with a specific movie ID.
+        /// Initializes a new instance of the <see cref="MovieNotFound"/> class with a specific movie ID.
         /// </summary>
         /// <param name="id">The ID of the movie that was not found.</param>
         public MovieNotFound(int id)
@@ -19,7 +19,7 @@ namespace FilmAPI.Data.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MovieNotFoundException"/> class with a specific movie name.
+        /// Initializes a new instance of the <see cref="MovieNotFound"/> class with a specific movie name.
         /// </summary>
         /// <param name="name">The name of the movie that was not found.</param>
         public MovieNotFound(string name)
