@@ -15,59 +15,25 @@ namespace FilmAPI.Services.Movies
         private readonly IMapper _mapper;
         private readonly ICharacterService _characterService;
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieService"/> class.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="mapper">The AutoMapper instance.</param>
+        /// <param name="characterService">The character service.</param>
         public MovieService(MoviesDbContext dbContext, IMapper mapper, ICharacterService characterService)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _characterService = characterService;
-            _characterService = characterService;
         }
 
 
-
-        public async Task<Movie> AddAsync(Movie obj)
-        {
-            await _dbContext.Movies.AddAsync(obj);
-            await _dbContext.SaveChangesAsync();
-            return obj;
-        }
-
-
-        public async Task<Movie> UpdateAsync(Movie obj)
-        {
-
-            // Check if a movie with the specified Id exists.
-            var existingMovie = await _dbContext.Movies.FindAsync(obj.Id);
-            if (existingMovie == null)
-            {
-                // If the movie is not found, throw a custom exception.
-                throw new MovieNotFound(obj.Id);
-            }
-
-            // Update the existing movie entity with data from the input object.
-            _dbContext.Entry(existingMovie).CurrentValues.SetValues(obj);
-            await _dbContext.SaveChangesAsync();
-
-            return existingMovie;
-
-
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var movieToDelete = await _dbContext.Movies.FindAsync(id);
-            if (movieToDelete != null)
-            {
-                // Remove the movie entity
-                _dbContext.Movies.Remove(movieToDelete);
-                await _dbContext.SaveChangesAsync();
-            }
-            else
-            {
-                throw new MovieNotFound(id);
-            }
-        }
-
+        /// <summary>
+        /// Retrieves a list of all movies from the database.
+        /// </summary>
+        /// <returns>A list of movie objects.</returns>
         public async Task<IEnumerable<Movie>> GetAllAsync()
         {
             return await _dbContext.Movies
@@ -77,79 +43,105 @@ namespace FilmAPI.Services.Movies
         }
 
 
+        /// <summary>
+        /// Retrieves a movie by its ID from the database.
+        /// </summary>
+        /// <param name="id">The ID of the movie to retrieve.</param>
+        /// <returns>The movie object if found, otherwise throws a <see cref="MovieNotFound"/> exception.</returns>
         public async Task<Movie> GetByIdAsync(int id)
         {
-            var movie = await _dbContext.Movies
-                .Where(m => m.Id == id)
+            var existingMovie = await _dbContext.Movies
                 .Include(m => m.Characters)
                 .Include(m => m.Franchise)
-                .FirstOrDefaultAsync();
-            if (movie == null)
-            {
-                throw new MovieNotFound(id);
-            }
-            return movie;
+                .SingleOrDefaultAsync(m => m.Id == id)
+                ?? throw new MovieNotFound(id);
+            return existingMovie;
         }
 
-        //GetCharactersInMovie: 
-        //    A method to retrieve all characters appearing in a specific movie.
-        //    It should accept the movie's ID as a parameter and 
-        //    return a collection of character entities associated with that movie.
 
+        /// <summary>
+        /// Adds a new movie to the database.
+        /// </summary>
+        /// <param name="obj">The movie object to add.</param>
+        /// <returns>The added movie object.</returns>
+        public async Task<Movie> AddAsync(Movie obj)
+        {
+            if (!await _dbContext.Franchises.AnyAsync(f => f.Id == obj.FranchiseId.Value))
+            {
+                throw new FranchiseNotFound(obj.FranchiseId.Value);
+            }
+            await _dbContext.Movies.AddAsync(obj);
+            await _dbContext.SaveChangesAsync();
+            return obj;
+        }
+
+
+        /// <summary>
+        /// Updates an existing movie in the database.
+        /// </summary>
+        /// <param name="obj">The movie object with updated information.</param>
+        /// <returns>The updated movie object.</returns>
+        public async Task<Movie> UpdateAsync(Movie obj)
+        {
+            var existingMovie = await _dbContext.Movies.FindAsync(obj.Id) ?? throw new MovieNotFound(obj.Id);
+            if (!await _dbContext.Franchises.AnyAsync(f => f.Id == obj.FranchiseId.Value))
+            {
+                throw new FranchiseNotFound(obj.FranchiseId.Value);
+            }
+            _dbContext.Entry(existingMovie).CurrentValues.SetValues(obj);
+            await _dbContext.SaveChangesAsync();
+            return existingMovie;
+        }
+
+
+
+        /// <summary>
+        /// Deletes a movie from the database by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie to delete.</param>
+        public async Task DeleteAsync(int id)
+        {
+            var movieToDelete = await _dbContext.Movies.FindAsync(id) ?? throw new MovieNotFound(id);
+            _dbContext.Movies.Remove(movieToDelete);
+            await _dbContext.SaveChangesAsync();
+
+        }
+
+
+        /// <summary>
+        /// Retrieves character IDs associated with a movie from the database.
+        /// </summary>
+        /// <param name="movieId">The ID of the movie.</param>
+        /// <returns>A list of character IDs.</returns>
         public async Task<IEnumerable<int>> GetCharacterIdsInMovieAsync(int movieId)
         {
             var movie = await _dbContext.Movies
                 .Include(m => m.Characters)
-                .FirstOrDefaultAsync(m => m.Id == movieId);
-
-            if (movie == null)
-            {
-                throw new MovieNotFound(movieId);
-            }
+                .FirstOrDefaultAsync(m => m.Id == movieId) ?? throw new MovieNotFound(movieId);
 
             return movie.Characters.Select(c => c.Id);
         }
 
 
+        /// <summary>
+        /// Updates the characters associated with a movie in the database.
+        /// </summary>
+        /// <param name="movieId">The ID of the movie.</param>
+        /// <param name="characterIds">A list of character IDs to associate with the movie.</param>
         public async Task UpdateMovieCharacterAsync(int movieId, List<int> characterIds)
         {
-            try
+            var movie = await _dbContext.Movies
+                .Include(m => m.Characters)
+                .FirstOrDefaultAsync(m => m.Id == movieId) ?? throw new MovieNotFound(movieId);
+
+            movie.Characters.Clear();
+            foreach (var characterId in characterIds)
             {
-                // Retrieve the movie by 'movieId' and include its associated characters
-                var movie = await _dbContext.Movies
-                    .Include(m => m.Characters)
-                    .FirstOrDefaultAsync(m => m.Id == movieId);
-
-                if (movie != null)
-                {
-                    movie.Characters.Clear(); // Clear the movie's character collection
-
-                    // Iterate through the 'characterIds' and add corresponding characters to the movie.
-                    foreach (var characterId in characterIds)
-                    {
-                        var character = await _characterService.GetByIdAsync(characterId);
-                        if (character == null)
-                            throw new CharacterNotFound(characterId);
-
-                        // Add the character to the movie's character collection
-                        movie.Characters.Add(character);
-                    }
-
-                    await _dbContext.SaveChangesAsync();
-                }
-                else
-                {
-                    throw new MovieNotFound(movieId);
-                }
+                var character = await _characterService.GetByIdAsync(characterId) ?? throw new CharacterNotFound(characterId);
+                movie.Characters.Add(character);
             }
-            catch (Exception ex)
-            {
-                // Handle other exceptions and rethrow them as custom exceptions if needed.
-                throw new Exception("An error occurred while updating movie characters.", ex);
-            }
+            await _dbContext.SaveChangesAsync();
         }
-
-
 
     }
 }

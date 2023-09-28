@@ -6,16 +6,24 @@ using FilmAPI.Data.Models;
 using FilmAPI.Services.Characters;
 using FilmAPI.Services.Movies;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace FilmAPI.Controllers
 {
+
+    /// <summary>
+    /// Controller for managing movie-related operations.
+    /// </summary>
     [Route("api/v1/movie")]
     [ApiController]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ApiConventionType(typeof(DefaultApiConventions))]
     public class MovieController : ControllerBase
     {
         private readonly IMovieService _movieService;
         private readonly IMapper _mapper;
         private readonly ICharacterService _characterService;
+
 
         public MovieController(IMovieService movieService, IMapper mapper, ICharacterService characterService)
         {
@@ -26,46 +34,51 @@ namespace FilmAPI.Controllers
         }
 
 
-
         /// <summary>
         /// Retrieve a list of all movies.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            try
-            {
-                return Ok(_mapper.Map<IEnumerable<MovieDtoPost>>(await _movieService.GetAllAsync()));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred: " + ex.Message);
-            }
+            return Ok(_mapper.Map<IEnumerable<MovieDto>>(await _movieService.GetAllAsync()));
         }
 
+
+        /// <summary>
+        /// Add a new movie.
+        /// </summary>
+        /// <param name="movie">The movie data to be added.</param>
+        /// <returns>NoContent if successful, NotFound if the franchise is not found.</returns>
         [HttpPost]
         public async Task<ActionResult<MovieDto>> PostMovie(MovieDtoPost movie)
         {
-            var newMovie = await _movieService.AddAsync(_mapper.Map<Movie>(movie));
+            try
+            {
+                var newMovie = await _movieService.AddAsync(_mapper.Map<Movie>(movie));
 
-            return CreatedAtAction("GetById",
-                new { id = newMovie.Id },
-               _mapper.Map<MovieDto>(newMovie));
+                CreatedAtAction("GetById",
+                    new { id = newMovie.Id },
+                   _mapper.Map<MovieDto>(newMovie));
+                return NoContent();
+            }
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
 
+        /// <summary>
+        /// Get a movie by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie to retrieve.</param>
+        /// <returns>The movie if found, NotFound if not found.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<MovieDto>> GetById(int id)
         {
             try
             {
                 var movie = await _movieService.GetByIdAsync(id);
-
-                if (movie == null)
-                {
-                    throw new MovieNotFound(id);
-                }
-
                 var movieDto = _mapper.Map<MovieDto>(movie);
                 return Ok(movieDto);
             }
@@ -73,13 +86,7 @@ namespace FilmAPI.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred.");
-            }
         }
-
-
 
 
         /// <summary>
@@ -87,111 +94,86 @@ namespace FilmAPI.Controllers
         /// </summary>
         /// <param name="id">The ID of the movie to update.</param>
         /// <param name="movieDto">The MovieDto object containing updated movie information.</param>
+        /// <returns>NoContent if successful, NotFound if the movie is not found.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] MovieDtoPut movieDto)
         {
             try
             {
-                // Retrieve the existing movie by its ID.
-                var existingMovie = await _movieService.GetByIdAsync(id);
-                if (existingMovie == null)
-                {
-                    // If the movie is not found, throw a custom exception.
-                    throw new MovieNotFound(id);
-                }
-
-                // Update the existing movie entity with data from the MovieDto.
-                _mapper.Map(movieDto, existingMovie);
-                // Update the movie in the database using the service.
-                var updatedMovie = await _movieService.UpdateAsync(existingMovie);
-                // Map the updated movie entity to a MovieDto for the response.
-                var updatedMovieDto = _mapper.Map<MovieDtoPut>(updatedMovie);
-                // Return the updated movie as JSON.
-                return Ok(updatedMovieDto);
+                await _movieService.UpdateAsync(_mapper.Map(movieDto, await _movieService.GetByIdAsync(id)));
+                return NoContent();
             }
             catch (MovieNotFound ex)
             {
-                // Handle the custom exception by returning a 404 Not Found response.
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                //Handle unexpected exceptions with a 400 Bad Request response.
-                return BadRequest($"Error: {ex.Message}");
-            }
         }
+
 
         /// <summary>
         /// Delete a movie by its ID.
         /// </summary>
         /// <param name="id">The ID of the movie to delete.</param>
+        /// <returns>NoContent if successful, NotFound if the movie is not found.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                // Delete the movie by its ID using the service.
                 await _movieService.DeleteAsync(id);
-                // Return a 204 No Content response to indicate a successful deletion.
                 return NoContent();
             }
             catch (MovieNotFound ex)
             {
-                // Handle the custom exception by returning a 404 Not Found response.
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                // Handle unexpected exceptions with a 500 Internal Server Error response.
-                return StatusCode(500, "An error occurred.");
             }
         }
 
+
+        /// <summary>
+        /// Get the characters in a movie by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie to retrieve characters for.</param>
+        /// <returns>A list of character details if successful, NotFound if the movie is not found.</returns>
         [HttpGet("{id}/characters")]
         public async Task<IActionResult> GetCharactersInMovie(int id)
         {
             try
             {
-                // Retrieve character IDs associated with the movie.
                 var characterIds = await _movieService.GetCharacterIdsInMovieAsync(id);
-
-                // Retrieve character details using the CharacterService and character IDs.
                 var characterDetails = new List<CharacterDTO>();
                 foreach (var characterId in characterIds)
                 {
                     var character = await _characterService.GetByIdAsync(characterId);
                     if (character != null)
                     {
-                        // Map the character entity to a CharacterDto object.
                         var characterDto = _mapper.Map<CharacterDTO>(character);
                         characterDetails.Add(characterDto);
                     }
                 }
-
-                // Return the character details as JSON.
                 return Ok(characterDetails);
             }
             catch (MovieNotFound ex)
             {
-                // Handle the custom exception by returning a 404 Not Found response.
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                // Handle other exceptions and return an appropriate response.
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
+
         }
 
+
+        /// <summary>
+        /// Update the characters associated with a movie.
+        /// </summary>
+        /// <param name="movieId">The ID of the movie to update characters for.</param>
+        /// <param name="characterIds">A list of character IDs to associate with the movie.</param>
+        /// <returns>NoContent if successful, NotFound if the movie or characters are not found.</returns>
         [HttpPut("{movieId}/characters")]
         public async Task<IActionResult> PutCharactersInMovie(int movieId, [FromBody] List<int> characterIds)
         {
             try
             {
                 await _movieService.UpdateMovieCharacterAsync(movieId, characterIds);
-
-                // Return a success response.
-                return Ok(new { Message = "Movie characters updated successfully." });
+                return NoContent();
             }
             catch (MovieNotFound ex)
             {
@@ -199,12 +181,9 @@ namespace FilmAPI.Controllers
             }
             catch (CharacterNotFound ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
+
         }
 
 
