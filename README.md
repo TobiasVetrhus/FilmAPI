@@ -11,7 +11,7 @@ This project involves using an EntityFramwork Code First workflow to create a da
 1. Clone this repository
 2. In `appsettings.json`, under "ConnectionStrings" change the "MoviesDb" data source to your SQL server name.
 3. In the Package Manager Console type:
-`add-migration initialDb`
+`add-migration initialDb`, then
 `update-database`
 This will create the database with dummy data from `MoviesDbContext.cs` in SMSS.
 
