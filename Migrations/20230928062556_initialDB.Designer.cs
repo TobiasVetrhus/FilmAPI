@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FilmAPI.Migrations
 {
     [DbContext(typeof(MoviesDbContext))]
-    [Migration("20230927133946_initialDb")]
-    partial class initialDb
+    [Migration("20230928062556_initialDB")]
+    partial class initialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -144,7 +144,6 @@ namespace FilmAPI.Migrations
                         .HasColumnType("nvarchar(2048)");
 
                     b.Property<int>("ReleaseYear")
-                        .HasMaxLength(4)
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
