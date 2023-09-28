@@ -35,7 +35,7 @@ namespace FilmAPI.Controllers
         {
             try
             {
-                return Ok(_mapper.Map<IEnumerable<MovieDto>>(await _movieService.GetAllAsync()));
+                return Ok(_mapper.Map<IEnumerable<MovieDtoPost>>(await _movieService.GetAllAsync()));
             }
             catch (Exception ex)
             {
@@ -182,6 +182,31 @@ namespace FilmAPI.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
+        [HttpPut("{movieId}/characters")]
+        public async Task<IActionResult> PutCharactersInMovie(int movieId, [FromBody] List<int> characterIds)
+        {
+            try
+            {
+                await _movieService.UpdateMovieCharacterAsync(movieId, characterIds);
+
+                // Return a success response.
+                return Ok(new { Message = "Movie characters updated successfully." });
+            }
+            catch (MovieNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (CharacterNotFound ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
 
     }
 }

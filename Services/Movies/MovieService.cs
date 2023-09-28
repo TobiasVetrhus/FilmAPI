@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FilmAPI.Data.Exceptions;
 using FilmAPI.Data.Models;
+using FilmAPI.Services.Characters;
 using Microsoft.EntityFrameworkCore;
 
 namespace FilmAPI.Services.Movies
@@ -12,12 +13,14 @@ namespace FilmAPI.Services.Movies
     {
         private readonly MoviesDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly ICharacterService _characterService;
 
-
-        public MovieService(MoviesDbContext dbContext, IMapper mapper)
+        public MovieService(MoviesDbContext dbContext, IMapper mapper, ICharacterService characterService)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _characterService = characterService;
+            _characterService = characterService;
         }
 
 
@@ -106,5 +109,47 @@ namespace FilmAPI.Services.Movies
 
             return movie.Characters.Select(c => c.Id);
         }
+
+
+        public async Task UpdateMovieCharacterAsync(int movieId, List<int> characterIds)
+        {
+            try
+            {
+                // Retrieve the movie by 'movieId' and include its associated characters
+                var movie = await _dbContext.Movies
+                    .Include(m => m.Characters)
+                    .FirstOrDefaultAsync(m => m.Id == movieId);
+
+                if (movie != null)
+                {
+                    movie.Characters.Clear(); // Clear the movie's character collection
+
+                    // Iterate through the 'characterIds' and add corresponding characters to the movie.
+                    foreach (var characterId in characterIds)
+                    {
+                        var character = await _characterService.GetByIdAsync(characterId);
+                        if (character == null)
+                            throw new CharacterNotFound(characterId);
+
+                        // Add the character to the movie's character collection
+                        movie.Characters.Add(character);
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    throw new MovieNotFound(movieId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions and rethrow them as custom exceptions if needed.
+                throw new Exception("An error occurred while updating movie characters.", ex);
+            }
+        }
+
+
+
     }
 }
