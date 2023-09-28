@@ -73,12 +73,12 @@ namespace FilmAPI.Controllers
         /// <summary>
         /// Returns all movies associated with a character.
         /// </summary>
-        [HttpGet("{characterId}/movies")]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(int characterId)
+        [HttpGet("{id}/movies")]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(int id)
         {
             try
             {
-                var movies = await _characterService.GetMoviesAsync(characterId);
+                var movies = await _characterService.GetMoviesAsync(id);
                 return Ok(_mapper.Map<IEnumerable<MovieDto>>(movies));
             }
             catch (CharacterNotFound ex)

@@ -43,13 +43,13 @@ namespace FilmAPI.Services.Characters
 
         public async Task<Character> GetByIdAsync(int id)
         {
+            if (!await CharacterExistsAsync(id))
+                throw new CharacterNotFound(id);
+
             var character = await _dbContext.Characters
                 .Where(c => c.Id == id)
                 .Include(c => c.Movies)
                 .FirstAsync();
-
-            if (character is null)
-                throw new CharacterNotFound(id);
 
             return character;
         }
@@ -78,14 +78,7 @@ namespace FilmAPI.Services.Characters
                 .Include(c => c.Movies)
                 .FirstOrDefaultAsync(c => c.Id == characterId);
 
-            if (character != null)
-            {
-                return character.Movies.ToList();
-            }
-            else
-            {
-                throw new CharacterNotFound(characterId);
-            }
+            return character.Movies.ToList();
         }
 
         public async Task<Character> UpdateAsync(Character obj)
