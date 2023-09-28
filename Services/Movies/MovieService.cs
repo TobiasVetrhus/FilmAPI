@@ -20,32 +20,34 @@ namespace FilmAPI.Services.Movies
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
+
+
         public async Task<Movie> AddAsync(Movie obj)
         {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj), "The movie entity cannot be null.");
-            }
-
-            try
-            {
-                _dbContext.Movies.Add(obj);
-                await _dbContext.SaveChangesAsync();
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                // Return a 500 Internal Server Error response with an error message.
-                throw new ApplicationException("An error occurred while adding the movie to the database.", ex);
-            }
+            await _dbContext.Movies.AddAsync(obj);
+            await _dbContext.SaveChangesAsync();
+            return obj;
         }
 
 
         public async Task<Movie> UpdateAsync(Movie obj)
         {
-            _dbContext.Entry(obj).State = EntityState.Modified;
+
+            // Check if a movie with the specified Id exists.
+            var existingMovie = await _dbContext.Movies.FindAsync(obj.Id);
+            if (existingMovie == null)
+            {
+                // If the movie is not found, throw a custom exception.
+                throw new MovieNotFound(obj.Id);
+            }
+
+            // Update the existing movie entity with data from the input object.
+            _dbContext.Entry(existingMovie).CurrentValues.SetValues(obj);
             await _dbContext.SaveChangesAsync();
-            return obj;
+
+            return existingMovie;
+
+
         }
 
         public async Task DeleteAsync(int id)
@@ -106,6 +108,3 @@ namespace FilmAPI.Services.Movies
         }
     }
 }
-
-
-
