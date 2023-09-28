@@ -25,6 +25,8 @@ namespace FilmAPI.Controllers
 
         }
 
+
+
         /// <summary>
         /// Retrieve a list of all movies.
         /// </summary>
@@ -41,12 +43,17 @@ namespace FilmAPI.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<ActionResult<MovieDto>> PostMovie(MovieDtoPost movie)
+        {
+            var newMovie = await _movieService.AddAsync(_mapper.Map<Movie>(movie));
+
+            return CreatedAtAction("GetMovie",
+                new { id = newMovie.Id },
+               _mapper.Map<MovieDto>(newMovie));
+        }
 
 
-        /// <summary>
-        /// Retrieve a movie by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the movie to retrieve.</param>
         [HttpGet("{id}")]
         public async Task<ActionResult<MovieDto>> GetById(int id)
         {
@@ -73,30 +80,7 @@ namespace FilmAPI.Controllers
         }
 
 
-        /// <summary>
-        /// Add a new movie to the database.
-        /// </summary>
-        /// <param name="movieDto">The MovieDto object containing movie information.</param>
-        [HttpPost]
-        public async Task<IActionResult> Save([FromBody] MovieDto movieDto)
-        {
-            try
-            {
-                // Map the MovieDto to a Movie entity for saving.
-                var movie = _mapper.Map<Movie>(movieDto);
-                // Add the movie to the database using the service.
-                var addedMovie = await _movieService.AddAsync(movie);
-                // Map the added movie entity to a MovieDto for the response.
-                var addedMovieDto = _mapper.Map<MovieDto>(addedMovie);
-                // Return a 201 Created response with the URL to retrieve the added movie.
-                return CreatedAtAction(nameof(GetById), new { id = addedMovie.Id }, addedMovieDto);
-            }
-            catch (Exception ex)
-            {
-                // Handle unexpected exceptions with a 400 Bad Request response.
-                return BadRequest($"Error: {ex.Message}");
-            }
-        }
+
 
         /// <summary>
         /// Update an existing movie by its ID.
@@ -104,7 +88,7 @@ namespace FilmAPI.Controllers
         /// <param name="id">The ID of the movie to update.</param>
         /// <param name="movieDto">The MovieDto object containing updated movie information.</param>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] MovieDto movieDto)
+        public async Task<IActionResult> Update(int id, [FromBody] MovieDtoPut movieDto)
         {
             try
             {
@@ -121,7 +105,7 @@ namespace FilmAPI.Controllers
                 // Update the movie in the database using the service.
                 var updatedMovie = await _movieService.UpdateAsync(existingMovie);
                 // Map the updated movie entity to a MovieDto for the response.
-                var updatedMovieDto = _mapper.Map<MovieDto>(updatedMovie);
+                var updatedMovieDto = _mapper.Map<MovieDtoPut>(updatedMovie);
                 // Return the updated movie as JSON.
                 return Ok(updatedMovieDto);
             }
@@ -199,9 +183,5 @@ namespace FilmAPI.Controllers
             }
         }
 
-
-
-
     }
 }
-

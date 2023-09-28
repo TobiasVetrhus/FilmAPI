@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /appsettings.json
 /Migrations/20230927082004_initialDB.cs
 /Migrations/MoviesDbContextModelSnapshot.cs
+/appsettings.json
