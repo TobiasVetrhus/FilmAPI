@@ -74,9 +74,10 @@ namespace FilmAPI.Services.Franchises
                 throw new FranchiseNotFound(id);
 
             var franchise = await _dbContext.Franchises
-                .Where(f => f.Id == id)
-                .FirstAsync();
+                .Include(f => f.Movies)
+                .FirstOrDefaultAsync(f => f.Id == id);
 
+            franchise.Movies.Clear();
             _dbContext.Franchises.Remove(franchise);
             await _dbContext.SaveChangesAsync();
         }
