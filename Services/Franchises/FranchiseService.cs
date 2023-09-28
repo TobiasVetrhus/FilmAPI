@@ -38,13 +38,13 @@ namespace FilmAPI.Services.Franchises
         /// </summary>
         public async Task<Franchise> GetByIdAsync(int id)
         {
+            if (!await FranchiseExistsAsync(id))
+                throw new FranchiseNotFound(id);
+
             var franchise = await _dbContext.Franchises
                 .Where(f => f.Id == id)
                 .Include(f => f.Movies)
                 .FirstAsync();
-
-            if (franchise is null)
-                throw new FranchiseNotFound(id);
 
             return franchise;
         }
@@ -89,18 +89,15 @@ namespace FilmAPI.Services.Franchises
         /// </summary>
         public async Task<ICollection<Character>> GetFranchiseCharactersAsync(int franchiseId)
         {
+            if (!await FranchiseExistsAsync(franchiseId))
+                throw new FranchiseNotFound(franchiseId);
+
             var franchise = await _dbContext.Franchises
                 .Include(f => f.Movies)
                 .ThenInclude(m => m.Characters)
                 .FirstOrDefaultAsync(f => f.Id == franchiseId);
 
-            if (franchise != null)
-            {
-                var characters = franchise.Movies.SelectMany(m => m.Characters).ToList();
-                return characters;
-            }
-
-            return null;
+            return franchise.Movies.SelectMany(m => m.Characters).ToList();
         }
 
         /// <summary>
@@ -108,16 +105,14 @@ namespace FilmAPI.Services.Franchises
         /// </summary>
         public async Task<ICollection<Movie>> GetFranchiseMoviesAsync(int franchiseId)
         {
+            if (!await FranchiseExistsAsync(franchiseId))
+                throw new FranchiseNotFound(franchiseId);
+
             var franchise = await _dbContext.Franchises
                 .Include(f => f.Movies)
                 .FirstOrDefaultAsync(f => f.Id == franchiseId);
 
-            if (franchise != null)
-            {
-                return franchise.Movies.ToList();
-            }
-
-            return null;
+            return franchise.Movies.ToList();
         }
 
         /// <summary>
