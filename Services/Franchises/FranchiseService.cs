@@ -13,9 +13,8 @@ namespace FilmAPI.Services.Franchises
             _dbContext = dbContext;
         }
 
-        /// <summary>
-        /// Add a new franchise to the database.
-        /// </summary>
+        
+        // Add a new franchise to the database.
         public async Task<Franchise> AddAsync(Franchise obj)
         {
             await _dbContext.Franchises.AddAsync(obj);
@@ -23,24 +22,27 @@ namespace FilmAPI.Services.Franchises
             return obj;
         }
 
-        /// <summary>
-        /// Get all franchises from the database.
-        /// </summary>
+   
+        // Get all franchises from the database.
+  
         public async Task<IEnumerable<Franchise>> GetAllAsync()
         {
+            // Retrieve all franchises including associated movies.
             return await _dbContext.Franchises
                 .Include(f => f.Movies)
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// Get a franchise by ID from the database.
-        /// </summary>
+
+        // Get a franchise by ID from the database.
+       
         public async Task<Franchise> GetByIdAsync(int id)
         {
+            // Check if the franchise with the given ID exists.
             if (!await FranchiseExistsAsync(id))
                 throw new FranchiseNotFound(id);
-
+            
+            // Retrieve the franchise by ID including associated movies.
             var franchise = await _dbContext.Franchises
                 .Where(f => f.Id == id)
                 .Include(f => f.Movies)
@@ -50,9 +52,8 @@ namespace FilmAPI.Services.Franchises
         }
 
 
-        /// <summary>
-        /// Update an existing franchise in the database.
-        /// </summary>
+        
+        // Update an existing franchise in the database.
         public async Task<Franchise> UpdateAsync(Franchise obj)
         {
             if (!await FranchiseExistsAsync(obj.Id))
@@ -65,9 +66,8 @@ namespace FilmAPI.Services.Franchises
         }
 
 
-        /// <summary>
-        /// Delete a franchise by ID.
-        /// </summary>
+       
+        // Delete a franchise by ID.
         public async Task DeleteAsync(int id)
         {
             if (!await FranchiseExistsAsync(id))
@@ -84,9 +84,8 @@ namespace FilmAPI.Services.Franchises
 
 
 
-        /// <summary>
-        /// Get characters belonging to a franchise by franchise ID.
-        /// </summary>
+        
+        //Get characters belonging to a franchise by franchise ID. 
         public async Task<ICollection<Character>> GetFranchiseCharactersAsync(int franchiseId)
         {
             if (!await FranchiseExistsAsync(franchiseId))
@@ -100,9 +99,8 @@ namespace FilmAPI.Services.Franchises
             return franchise.Movies.SelectMany(m => m.Characters).ToList();
         }
 
-        /// <summary>
-        /// Get movies belonging to a franchise by franchise ID.
-        /// </summary>
+      
+        // Get movies belonging to a franchise by franchise ID.
         public async Task<ICollection<Movie>> GetFranchiseMoviesAsync(int franchiseId)
         {
             if (!await FranchiseExistsAsync(franchiseId))
@@ -115,9 +113,8 @@ namespace FilmAPI.Services.Franchises
             return franchise.Movies.ToList();
         }
 
-        /// <summary>
-        /// Update the list of movies associated with a franchise.
-        /// </summary>
+        // Update the list of movies associated with a franchise.
+       
         public async Task UpdateMoviesAsync(int franchiseId, int[] movieIds)
         {
             //Retrieves the franchise by 'franchiseId' and includes their associated movies
@@ -148,9 +145,8 @@ namespace FilmAPI.Services.Franchises
 
         }
 
-        /// <summary>
-        /// Get a franchise by ID.
-        /// </summary>
+       
+        // Get a franchise by ID.
         public async Task<Franchise> GetFranchiseByIdAsync(int id)
         {
             return await _dbContext.Franchises.FindAsync(id);
