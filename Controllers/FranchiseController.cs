@@ -117,6 +117,32 @@ namespace FilmAPI.Controllers
             var movieDTOs = _mapper.Map<IEnumerable<MovieDto>>(movies);
             return Ok(movieDTOs);
         }
+        /// <summary>
+        /// Update the list of movies associated with a franchise by franchise ID.
+        /// </summary>
+        [HttpPut("{id}/movies")]
+        public async Task<IActionResult> PutFranchiseMovies(int id, [FromBody] int[] movieIds)
+        {
+            try
+            {
+                await _franchiseService.UpdateMoviesAsync(id, movieIds);
+                return NoContent();
+            }
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (MovieNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions and return an appropriate response.
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
 
         /// <summary>
         /// Get all characters in a franchise by franchise ID.

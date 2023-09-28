@@ -7,7 +7,7 @@
 namespace FilmAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class initialdb : Migration
+    public partial class initialDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -43,27 +43,28 @@ namespace FilmAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Movie",
+                name: "Movies",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Genre = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    ReleaseYear = table.Column<int>(type: "int", maxLength: 4, nullable: false),
+                    ReleaseYear = table.Column<int>(type: "int", nullable: false),
                     Director = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Picture = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
                     Trailer = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
-                    FranchiseId = table.Column<int>(type: "int", nullable: true)
+                    FranchiseId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Movie", x => x.Id);
+                    table.PrimaryKey("PK_Movies", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Movie_Franchises_FranchiseId",
+                        name: "FK_Movies_Franchises_FranchiseId",
                         column: x => x.FranchiseId,
                         principalTable: "Franchises",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -83,9 +84,9 @@ namespace FilmAPI.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MovieCharacters_Movie_MovieId",
+                        name: "FK_MovieCharacters_Movies_MovieId",
                         column: x => x.MovieId,
-                        principalTable: "Movie",
+                        principalTable: "Movies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -110,7 +111,7 @@ namespace FilmAPI.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Movie",
+                table: "Movies",
                 columns: new[] { "Id", "Director", "FranchiseId", "Genre", "Picture", "ReleaseYear", "Title", "Trailer" },
                 values: new object[,]
                 {
@@ -131,14 +132,14 @@ namespace FilmAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Movie_FranchiseId",
-                table: "Movie",
-                column: "FranchiseId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_MovieCharacters_CharacterId",
                 table: "MovieCharacters",
                 column: "CharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Movies_FranchiseId",
+                table: "Movies",
+                column: "FranchiseId");
         }
 
         /// <inheritdoc />
@@ -151,7 +152,7 @@ namespace FilmAPI.Migrations
                 name: "Character");
 
             migrationBuilder.DropTable(
-                name: "Movie");
+                name: "Movies");
 
             migrationBuilder.DropTable(
                 name: "Franchises");

@@ -14,7 +14,7 @@ namespace FilmAPI.Services.Franchises
         }
 
         /// <summary>
-        /// Add a new franchise.
+        /// Add a new franchise to the database.
         /// </summary>
         public async Task<Franchise> AddAsync(Franchise obj)
         {
@@ -22,6 +22,48 @@ namespace FilmAPI.Services.Franchises
             await _dbContext.SaveChangesAsync();
             return obj;
         }
+
+        /// <summary>
+        /// Get all franchises from the database.
+        /// </summary>
+        public async Task<IEnumerable<Franchise>> GetAllAsync()
+        {
+            return await _dbContext.Franchises
+                .Include(f => f.Movies)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Get a franchise by ID from the database.
+        /// </summary>
+        public async Task<Franchise> GetByIdAsync(int id)
+        {
+            var franchise = await _dbContext.Franchises
+                .Where(f => f.Id == id)
+                .Include(f => f.Movies)
+                .FirstAsync();
+
+            if (franchise is null)
+                throw new FranchiseNotFound(id);
+
+            return franchise;
+        }
+
+
+        /// <summary>
+        /// Update an existing franchise in the database.
+        /// </summary>
+        public async Task<Franchise> UpdateAsync(Franchise obj)
+        {
+            if (!await FranchiseExistsAsync(obj.Id))
+                throw new FranchiseNotFound(obj.Id);
+
+            _dbContext.Entry(obj).State = EntityState.Modified;
+            _dbContext.SaveChanges();
+
+            return obj;
+        }
+
 
         /// <summary>
         /// Delete a franchise by ID.
@@ -39,45 +81,7 @@ namespace FilmAPI.Services.Franchises
             await _dbContext.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Get all franchises.
-        /// </summary>
-        public async Task<IEnumerable<Franchise>> GetAllAsync()
-        {
-            return await _dbContext.Franchises
-                .Include(f => f.Movies)
-                .ToListAsync();
-        }
 
-        /// <summary>
-        /// Get a franchise by ID.
-        /// </summary>
-        public async Task<Franchise> GetByIdAsync(int id)
-        {
-            var franchise = await _dbContext.Franchises
-                .Where(f => f.Id == id)
-                .Include(f => f.Movies)
-                .FirstAsync();
-
-            if (franchise is null)
-                throw new FranchiseNotFound(id);
-
-            return franchise;
-        }
-
-        /// <summary>
-        /// Update an existing franchise.
-        /// </summary>
-        public async Task<Franchise> UpdateAsync(Franchise obj)
-        {
-            if (!await FranchiseExistsAsync(obj.Id))
-                throw new FranchiseNotFound(obj.Id);
-
-            _dbContext.Entry(obj).State = EntityState.Modified;
-            _dbContext.SaveChanges();
-
-            return obj;
-        }
 
         /// <summary>
         /// Get characters belonging to a franchise by franchise ID.
@@ -145,6 +149,7 @@ namespace FilmAPI.Services.Franchises
             {
                 throw new FranchiseNotFound(franchiseId);
             }
+
         }
 
         /// <summary>
@@ -164,5 +169,7 @@ namespace FilmAPI.Services.Franchises
             return await _dbContext.Movies.AnyAsync(m => m.Id == id);
         }
     }
+
+
 }
 
