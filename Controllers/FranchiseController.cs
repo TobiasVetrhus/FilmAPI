@@ -111,15 +111,17 @@ namespace FilmAPI.Controllers
         [HttpGet("{id}/movies")]
         public async Task<IActionResult> GetFranchiseMovies(int id)
         {
-            var movies = await _franchiseService.GetFranchiseMoviesAsync(id);
-            if (movies == null)
+            try
             {
-                return NotFound();
+                var movies = await _franchiseService.GetFranchiseMoviesAsync(id);
+                return Ok(_mapper.Map<IEnumerable<MovieDto>>(movies));
             }
-
-            var movieDTOs = _mapper.Map<IEnumerable<MovieDto>>(movies);
-            return Ok(movieDTOs);
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
         /// <summary>
         /// Update the list of movies associated with a franchise by franchise ID.
         /// </summary>
@@ -146,21 +148,21 @@ namespace FilmAPI.Controllers
             }
         }
 
-
         /// <summary>
         /// Get all characters in a franchise by franchise ID.
         /// </summary>
         [HttpGet("{id}/characters")]
         public async Task<IActionResult> GetFranchiseCharacters(int id)
         {
-            var characters = await _franchiseService.GetFranchiseCharactersAsync(id);
-            if (characters == null)
+            try
             {
-                return NotFound();
+                var characters = await _franchiseService.GetFranchiseCharactersAsync(id);
+                return Ok(_mapper.Map<IEnumerable<CharacterDTO>>(characters));
             }
-
-            var characterDTOs = _mapper.Map<IEnumerable<CharacterDTO>>(characters);
-            return Ok(characterDTOs);
+            catch (FranchiseNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
