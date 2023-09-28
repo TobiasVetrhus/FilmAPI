@@ -13,6 +13,11 @@ namespace FilmAPI.Services.Characters
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Adds a character.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public async Task<Character> AddAsync(Character obj)
         {
             await _dbContext.Characters.AddAsync(obj);
@@ -20,6 +25,12 @@ namespace FilmAPI.Services.Characters
             return obj;
         }
 
+        /// <summary>
+        /// Deletes a character.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="CharacterNotFound"></exception>
         public async Task DeleteAsync(int id)
         {
             //Check if the character with the given 'id' exists
@@ -35,12 +46,21 @@ namespace FilmAPI.Services.Characters
             await _dbContext.SaveChangesAsync();
         }
 
-        //Gets all characters from the DbContext, including their associated movies
+        /// <summary>
+        /// Gets all characters, including their associated movies
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<Character>> GetAllAsync()
         {
             return await _dbContext.Characters.Include(c => c.Movies).ToListAsync();
         }
 
+        /// <summary>
+        /// Gets a character by the given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="CharacterNotFound"></exception>
         public async Task<Character> GetByIdAsync(int id)
         {
             if (!await CharacterExistsAsync(id))
@@ -54,7 +74,12 @@ namespace FilmAPI.Services.Characters
             return character;
         }
 
-        //Retrieves characters whose 'FullName' contains the specified 'name'
+        /// <summary>
+        /// Retrieves characters whose 'FullName' contains the specified 'name'.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="CharacterNotFound"></exception>
         public async Task<IEnumerable<Character>> GetByNameAsync(string name)
         {
             var characters = await _dbContext.Characters
@@ -68,7 +93,12 @@ namespace FilmAPI.Services.Characters
             return characters;
         }
 
-        //Retrieves the character's movies based on the 'characterId'
+        /// <summary>
+        /// Retrieves the character's movies based on the 'characterId'
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <returns></returns>
+        /// <exception cref="CharacterNotFound"></exception>
         public async Task<ICollection<Movie>> GetMoviesAsync(int characterId)
         {
             if (!await CharacterExistsAsync(characterId))
@@ -81,6 +111,12 @@ namespace FilmAPI.Services.Characters
             return character.Movies.ToList();
         }
 
+        /// <summary>
+        /// Updates a character.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        /// <exception cref="CharacterNotFound"></exception>
         public async Task<Character> UpdateAsync(Character obj)
         {
             if (!await CharacterExistsAsync(obj.Id))
@@ -92,6 +128,14 @@ namespace FilmAPI.Services.Characters
             return obj;
         }
 
+        /// <summary>
+        /// Updates a character's movies.
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="movieIds"></param>
+        /// <returns></returns>
+        /// <exception cref="MovieNotFound"></exception>
+        /// <exception cref="CharacterNotFound"></exception>
         public async Task UpdateMoviesAsync(int characterId, int[] movieIds)
         {
             //Retrieves the character by 'characterId' and includes their associated movies
