@@ -48,7 +48,7 @@ namespace FilmAPI.Controllers
         {
             var newMovie = await _movieService.AddAsync(_mapper.Map<Movie>(movie));
 
-            return CreatedAtAction("GetMovie",
+            return CreatedAtAction("GetById",
                 new { id = newMovie.Id },
                _mapper.Map<MovieDto>(newMovie));
         }
