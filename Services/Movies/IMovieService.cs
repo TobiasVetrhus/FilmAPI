@@ -11,5 +11,6 @@ namespace FilmAPI.Services.Movies
         //Task<Movie> GetByIdAsync(int id);
         //Task<Movie> UpdateAsync(Movie obj);
         Task<IEnumerable<int>> GetCharacterIdsInMovieAsync(int movieId);
+        Task UpdateMovieCharacterAsync(int movieId, List<int> characterIds);
     }
 }
